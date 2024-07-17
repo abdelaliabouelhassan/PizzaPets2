@@ -1,6 +1,6 @@
 <template>
-  <TransitionRoot as="template" :show="open">
-    <Dialog class="relative z-10" @close="open = false">
+  <TransitionRoot as="template" :show="modalStore.open">
+    <Dialog class="relative z-10" @close="modalStore.closeModal">
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
@@ -30,22 +30,27 @@
               class="relative transform overflow-hidden bg-[#FF5400] border-4 border-black ring-4 ring-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
             >
               <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
-                <button class="text-white text-2xl focus:outline-none" @click="open = false">
+                <button
+                  class="text-white text-2xl focus:outline-none"
+                  @click="modalStore.closeModal"
+                >
                   x
                 </button>
               </div>
               <div class="sm:flex sm:items-start">
-                <div class="text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                  <div
-                    class="mt-8 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer"
+                <div
+                  class="pt-6 mb-6 flex flex-col gap-y-6 text-center sm:ml-4 sm:mt-0 sm:text-left w-full"
+                >
+                  <button
+                    class="border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
                   >
                     Magic eden
-                  </div>
-                  <div
-                    class="mt-6 mb-8 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer"
+                  </button>
+                  <button
+                    class="border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
                   >
                     XVERSE
-                  </div>
+                  </button>
                 </div>
               </div>
             </DialogPanel>
@@ -57,8 +62,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { useModalStore } from '@/stores/modal.js'
 
-const open = ref(true)
+const modalStore = useModalStore()
 </script>

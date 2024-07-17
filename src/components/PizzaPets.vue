@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 
 // Generate 100 pet objects
-const pets = Array.from({ length: 100 }, (_, index) => ({
+const pets = Array.from({ length: 10 }, (_, index) => ({
   inscriptionId: `pet-${index}`,
   source: './pet.png'
 }))
@@ -21,12 +21,6 @@ const toggleSelection = (pet) => {
 
 <template>
   <div class="max-w-[1140px] mx-auto">
-    <!-- <div
-      :class="{
-        'pt-1 pr-1 pl-1': selectedPets.length > 0
-      }"
-      class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8"
-    > -->
     <div
       class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8 p-1"
     >
