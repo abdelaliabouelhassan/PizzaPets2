@@ -1,16 +1,17 @@
-/* eslint-disable no-undef */
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import * as path from 'path'
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill'
+import inject from '@rollup/plugin-inject'
 
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     dedupe: ['vue'],
     alias: {
-      '@': path.resolve(__dirname, 'src')
+      '@': path.resolve(__dirname, 'src'),
+      buffer: 'buffer'
     }
   },
   define: {
@@ -19,18 +20,15 @@ export default defineConfig({
   build: {
     rollupOptions: {
       external: [],
-      output: {
-        // exports: 'named',
-        // globals: {
-        //   '@vueuse/core': 'VueUseCore',
-        //   vue: 'Vue'
-        // }
-      },
+      output: {},
       plugins: [
         NodeGlobalsPolyfillPlugin({
           buffer: true
         }),
-        NodeModulesPolyfillPlugin()
+        NodeModulesPolyfillPlugin(),
+        inject({
+          Buffer: ['buffer', 'Buffer']
+        })
       ]
     },
     sourcemap: true,
@@ -43,7 +41,10 @@ export default defineConfig({
           buffer: true
         }),
         NodeModulesPolyfillPlugin()
-      ]
+      ],
+      define: {
+        global: 'globalThis'
+      }
     }
   }
 })
