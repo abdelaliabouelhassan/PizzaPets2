@@ -43,13 +43,13 @@
                 >
                   <button
                     class="border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-                    @click="modalStore.WalletConnect(`MagicEden`)"
+                    @click="authStore.WalletConnect(`MagicEden`)"
                   >
                     Magic eden
                   </button>
                   <button
                     class="border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-                    @click="modalStore.WalletConnect(`Xverse`)"
+                    @click="authStore.WalletConnect(`Xverse`)"
                   >
                     XVERSE
                   </button>
@@ -66,7 +66,9 @@
 <script setup>
   import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
   import { useModalStore } from '@/stores/modal.js'
+  import { useAuthStore } from '@/stores/auth.js'
 
   const modalStore = useModalStore()
+  const authStore = useAuthStore()
 </script>
 

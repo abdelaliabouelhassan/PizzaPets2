@@ -1,9 +1,11 @@
 <script setup>
 import LoginModal from './LoginModal.vue'
 import { useModalStore } from '@/stores/modal.js'
+import { useAuthStore } from '@/stores/auth.js'
 import { addressShortening } from '@/utils/address.js'
 
 const modalStore = useModalStore()
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -15,7 +17,7 @@ const modalStore = useModalStore()
     <div class="relative">
       <div class="absolute top-14">
         <ul
-          v-if="modalStore.logoutOpen"
+          v-if="authStore.logoutOpen"
           role="menu"
           data-popover="profile-menu"
           data-popover-placement="bottom"
@@ -25,7 +27,7 @@ const modalStore = useModalStore()
             <button
               role="menuitem"
               class="flex justify-center w-full cursor-pointer select-none items-center border-black border-4 gap-2 px-3 pt-[9px] pb-2 text-start leading-tight outline-none transition-all hover:bg-brown hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-brown focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900"
-              @click="modalStore.signOut"
+              @click="authStore.signOut"
             >
               <svg
                 width="16"
@@ -50,7 +52,7 @@ const modalStore = useModalStore()
         </ul>
       </div>
       <button
-        v-if="modalStore.walletAddress == ''"
+        v-if="authStore.walletAddress == ''"
         @click="modalStore.openModal"
         class="py-3 px-4 bg-[#FF5400] text-white text-[18px] h-[48px] min-w-[178px] border-4 border-black ring-4 ring-white hover:scale-105 duration-200 mr-1 cursor-pointer flex items-center justify-center"
       >
@@ -58,10 +60,10 @@ const modalStore = useModalStore()
       </button>
       <button
         v-else
-        @click="modalStore.openLogout"
+        @click="authStore.openLogout"
         class="py-3 px-4 bg-[#FF5400] text-white text-[18px] h-[48px] min-w-[178px] border-4 border-black ring-4 ring-white hover:scale-105 duration-200 mr-1 cursor-pointer flex items-center justify-center"
       >
-        {{ addressShortening(modalStore.walletAddress) }}
+        {{ addressShortening(authStore.walletAddress) }}
       </button>
     </div>
   </header>
