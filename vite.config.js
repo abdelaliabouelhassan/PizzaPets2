@@ -18,13 +18,13 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['@vueuse/core', 'vue'],
+      external: [],
       output: {
-        exports: 'named',
-        globals: {
-          '@vueuse/core': 'VueUseCore',
-          vue: 'Vue'
-        }
+        // exports: 'named',
+        // globals: {
+        //   '@vueuse/core': 'VueUseCore',
+        //   vue: 'Vue'
+        // }
       },
       plugins: [
         NodeGlobalsPolyfillPlugin({
