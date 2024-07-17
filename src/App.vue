@@ -9,8 +9,6 @@ import InscriptionSummary from './components/InscriptionSummary.vue'
   <main class="md:absolute h-full w-full top-0 left-0">
     <div class="max-w-[1170px] mx-auto mt-12 px-4 pb-24">
       <AppHeader />
-
-      <!-- TODO: if user is not connected, show a message to connect wallet -->
       <div>
         <h1 class="uppercase text-4xl mt-16 mb-8 text-white ml-4">My pets</h1>
         <div

@@ -39,8 +39,6 @@ const handler = async (event) => {
       }
     }
 
-    //TODO: Need to filter and return only the pets that are alive
-
     return {
       statusCode: 200,
       body: JSON.stringify(pets)
