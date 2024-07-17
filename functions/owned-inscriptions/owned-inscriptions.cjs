@@ -3,6 +3,7 @@ const axios = require('axios')
 
 const handler = async (event) => {
   const address = event.queryStringParameters.address
+
   const token = '39cdda6d-f149-4122-9c00-b98726c8d95b'
 
   if (!address) {
@@ -29,9 +30,8 @@ const handler = async (event) => {
           }
         }
       )
-
       const data = response.data
-      if (data && data.length > 0) {
+      if (data && data.data && data.data.length > 0) {
         pets = pets.concat(data)
         page++
       } else {
@@ -40,7 +40,6 @@ const handler = async (event) => {
     }
 
     //TODO: Need to filter and return only the pets that are alive
-
     return {
       statusCode: 200,
       body: JSON.stringify(pets)
