@@ -26,7 +26,7 @@ const toggleSelection = (pet) => {
     >
       <div v-for="(pet, i) in pets" :key="i" class="relative">
         <div
-          class="group bg-gray-100 focus-within:ring-2 focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 cursor-pointer"
+          class="group bg-gray-100 focus-within:ring-2 focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 cursor-pointer hover:scale-105 duration-200"
           :class="{
             'ring-4 ring-white': selectedPets?.some((p) => p.inscriptionId === pet.inscriptionId)
           }"
