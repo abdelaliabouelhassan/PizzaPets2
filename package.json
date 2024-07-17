@@ -20,7 +20,8 @@
     "ordinalsbot": "^0.2.10",
     "pinia": "^2.1.7",
     "vite-plugin-node-polyfills": "^0.22.0",
-    "vue": "^3.4.29"
+    "vue": "^3.4.29",
+    "vue3-toastify": "^0.2.2"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",

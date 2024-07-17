@@ -25,7 +25,7 @@ const modalStore = useModalStore()
             <button
               role="menuitem"
               class="flex justify-center w-full cursor-pointer select-none items-center border-black border-4 gap-2 px-3 pt-[9px] pb-2 text-start leading-tight outline-none transition-all hover:bg-brown hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-brown focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900"
-              @click="handleLogout"
+              @click="modalStore.signOut"
             >
               <svg
                 width="16"
@@ -42,7 +42,7 @@ const modalStore = useModalStore()
                   fill="#ffffff"
                 ></path>
               </svg>
-              <p class="block font-bold text-white text-sm antialiased leading-normal text-inherit" @click="modalStore.closeConnectWallet">
+              <p class="block font-bold text-white text-sm antialiased leading-normal text-inherit">
                 Sign Out
               </p>
             </button>

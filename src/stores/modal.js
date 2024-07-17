@@ -5,6 +5,8 @@ import {
   BitcoinNetworkType,
   AddressPurpose,
 } from "sats-connect";
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 export const useModalStore = defineStore('modal', {
   state: () => ({
     open: false,
@@ -21,7 +23,7 @@ export const useModalStore = defineStore('modal', {
     openLogout() {
       this.logoutOpen = !this.logoutOpen
     },
-    closeConnectWallet() {
+    signOut() {
       this.walletAddress = "";
       this.logoutOpen = false
       localStorage.setItem("walletAddress", "");
@@ -47,19 +49,30 @@ export const useModalStore = defineStore('modal', {
               localStorage.setItem("walletAddress", address);
               this.walletAddress = address;
               this.open = false;
+              toast.success("Xverse Wallet connected", {
+                theme: 'colored',
+                autoClose: 1000,
+              });
             },
             onCancel: () => {
-              alert('Request canceled');
+              toast.warn("Request canceled", {
+                theme: 'colored',
+                autoClose: 1000,
+              });
             },
           };
           await getAddress(getAddressOptions);
         } catch (err) {
+          toast.error("install Xverse Wallet", {
+            theme: 'colored',
+            autoClose: 1000,
+          });
         }
       } else if (walletType === "MagicEden") {
         try {
           await getAddress({
             getProvider: async () => {
-              return window.magicEden.bitcoin;
+              return window.magicEden?.bitcoin;
             },
             payload: {
               purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
@@ -78,13 +91,23 @@ export const useModalStore = defineStore('modal', {
               localStorage.setItem("walletAddress", address);
               this.walletAddress = address;
               this.open = false;
+              toast.success("Magic Eden Wallet connected", {
+                theme: 'colored',
+                autoClose: 1000,
+              });
             },
             onCancel: () => {
-              alert('Request canceled');
+              toast.warn("Request canceled", {
+                theme: 'colored',
+                autoClose: 1000,
+              });
             },
           });
         } catch (err) {
-          console.log('error: ', err)
+          toast.error("install Magic Eden Wallet", {
+            theme: 'colored',
+            autoClose: 1000,
+          });
         }
       }
     }
