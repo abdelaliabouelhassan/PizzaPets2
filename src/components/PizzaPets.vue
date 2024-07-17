@@ -21,9 +21,7 @@ const toggleSelection = (pet) => {
 
 <template>
   <div class="max-w-[1140px] m-4">
-    <div
-      class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8"
-    >
+    <div class="grid gap-x-4 gap-y-8 grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
       <div v-for="(pet, i) in pets" :key="i" class="relative">
         <div
           class="group bg-gray-100 focus-within:ring-2 focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 cursor-pointer hover:scale-105 duration-200"

@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-12 grid grid-cols-7 gap-4">
+  <div class="mt-12 grid grid-cols-2 lg:grid-cols-7 gap-4">
     <div
       v-for="(option, index) in options"
       :key="index"
@@ -7,8 +7,8 @@
       :class="selected.includes(index) ? 'border-white' : 'border-transparent'"
       class="cursor-pointer p-4 shadow bg-black text-white border-4 hover:border-white flex flex-col items-center justify-center"
     >
-      <img :src="getIconPath(option.label)" class="mb-2" alt="" />
-      <span>{{ option.label }}</span>
+      <img :src="getIconPath(option.label)" class="mb-2 h-6 w-6" alt="" />
+      <span class="text-lg">{{ option.label }}</span>
     </div>
   </div>
 </template>
