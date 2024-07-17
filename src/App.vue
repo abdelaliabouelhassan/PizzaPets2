@@ -12,15 +12,15 @@ import InscriptionSummary from './components/InscriptionSummary.vue'
 
       <!-- TODO: if user is not connected, show a message to connect wallet -->
       <div>
-        <h1 class="uppercase text-4xl mt-16 mb-8 text-white">My pets</h1>
+        <h1 class="uppercase text-4xl mt-16 mb-8 text-white ml-4">My pets</h1>
         <div class="w-full flex flex-col overflow-y-auto hide-scrollbar max-h-[580px]">
           <PizzaPets />
         </div>
 
-        <h2 class="uppercase text-4xl mt-14 mb-8 text-white">Feed your pets</h2>
-        <ChildrenInscriptions />
+        <h2 class="uppercase text-4xl mt-14 mb-8 text-white ml-4">Feed your pets</h2>
+        <ChildrenInscriptions class="px-4" />
 
-        <InscriptionSummary class="mt-24" />
+        <InscriptionSummary class="px-4 mt-24" />
       </div>
     </div>
   </main>

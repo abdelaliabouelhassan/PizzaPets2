@@ -20,9 +20,9 @@ const toggleSelection = (pet) => {
 </script>
 
 <template>
-  <div class="max-w-[1140px] mx-auto">
+  <div class="max-w-[1140px] m-4">
     <div
-      class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8 p-1"
+      class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8"
     >
       <div v-for="(pet, i) in pets" :key="i" class="relative">
         <div

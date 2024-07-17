@@ -5,6 +5,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 const app = createApp(App)
+
 const pinia = createPinia()
 
 const ordinalsbotObj = new Ordinalsbot('apikey', 'testnet')

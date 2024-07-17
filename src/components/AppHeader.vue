@@ -6,7 +6,7 @@ const modalStore = useModalStore()
 </script>
 
 <template>
-  <header class="w-full flex items-center justify-between space-x-10">
+  <header class="w-full flex items-center justify-between space-x-10 px-4">
     <div>
       <img src="../assets/logo.svg" class="w-full h-full" alt="" />
     </div>
