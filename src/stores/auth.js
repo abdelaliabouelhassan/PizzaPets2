@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
         toast.error(`Install ${walletType} Wallet`, {
           theme: 'colored',
           autoClose: 3000,
-          position: toast.POSITION.BOTTOM_RIGHT
+          position: 'bottom-right'
         })
       }
     },
@@ -54,15 +54,12 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletAddress', address)
           this.walletAddress = address
           modalStore.closeModal()
-          toast.success(`${walletType} Wallet connected`, {
-            theme: 'colored',
-            autoClose: 1000
-          })
         },
         onCancel: () => {
-          toast.warn('Request canceled', {
+          toast.error('Request canceled', {
             theme: 'colored',
-            autoClose: 1000
+            autoClose: 3000,
+            position: 'bottom-right'
           })
         }
       }
