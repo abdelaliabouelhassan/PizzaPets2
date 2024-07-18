@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-12 grid grid-cols-2 lg:grid-cols-7 gap-4">
+  <div class="mt-12 grid grid-cols-2 lg:grid-cols-6 gap-4">
     <div
       v-for="(option, index) in options"
       :key="index"
@@ -26,8 +26,6 @@ const options = [
   { label: 'Cocaine' },
   { label: 'LSD' },
   { label: 'Beer' },
-  { label: 'Wine' },
-  { label: 'Steak' },
   { label: 'DMT' },
   { label: 'Ketamine' },
   { label: 'Molly' }
