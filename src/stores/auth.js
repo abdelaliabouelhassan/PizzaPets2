@@ -6,16 +6,16 @@ import { useModalStore } from './modal'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    logoutOpen: false,
     walletAddress: localStorage.getItem('walletAddress') || ''
   }),
+  getters: {
+    isLoggedIn() {
+      return this.walletAddress !== ''
+    }
+  },
   actions: {
-    openLogout() {
-      this.logoutOpen = !this.logoutOpen
-    },
     signOut() {
       this.walletAddress = ''
-      this.logoutOpen = false
       localStorage.setItem('walletAddress', '')
       localStorage.setItem('walletType', '')
     },
@@ -77,7 +77,6 @@ export const useAuthStore = defineStore('auth', {
               }
             },
             onFinish: (response) => {
-              console.log({ response })
               const address = response.addresses[0].address
               //   const paymentAddress = response.addresses[1].address
               //   const pubkey = response.addresses[0].publicKey

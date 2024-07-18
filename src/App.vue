@@ -11,9 +11,7 @@ import InscriptionSummary from './components/InscriptionSummary.vue'
       <AppHeader />
       <div>
         <h1 class="uppercase text-4xl mt-16 mb-8 text-white ml-4">My pets</h1>
-        <div
-          class="w-full flex flex-col overflow-y-auto hide-scrollbar max-h-[960px] lg:max-h-[580px]"
-        >
+        <div class="w-full flex flex-col overflow-y-auto hide-scrollbar">
           <PizzaPets />
         </div>
 
