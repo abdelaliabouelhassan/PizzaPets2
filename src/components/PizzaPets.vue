@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 
 // Generate 100 pet objects
-const pets = Array.from({ length: 100 }, (_, index) => ({
+const pets = Array.from({ length: 10 }, (_, index) => ({
   inscriptionId: `pet-${index}`,
   source: './pet.png'
 }))
@@ -55,16 +55,16 @@ const goToPage = (page) => {
     <!-- Pagination Controls -->
     <div class="flex justify-center mt-12">
       <button
+        :class="currentPage > 1 ? 'visible' : 'invisible'"
         class="px-4 py-2 mx-1 bg-black text-white w-[100px]"
-        :disabled="currentPage === 1"
         @click="goToPage(currentPage - 1)"
       >
         Previous
       </button>
       <span class="px-4 py-2 mx-1 text-white">{{ currentPage }} / {{ totalPages }}</span>
       <button
+        :class="currentPage < totalPages ? 'visible' : 'invisible'"
         class="px-4 py-2 mx-1 bg-black text-white w-[100px]"
-        :disabled="currentPage === totalPages"
         @click="goToPage(currentPage + 1)"
       >
         Next

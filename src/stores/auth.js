@@ -16,94 +16,62 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     signOut() {
       this.walletAddress = ''
-      localStorage.setItem('walletAddress', '')
-      localStorage.setItem('walletType', '')
+      localStorage.removeItem('walletAddress')
+      localStorage.removeItem('walletType')
     },
-    async WalletConnect(walletType) {
+    async connectWallet(walletType) {
+      const getAddressOptions = this.getAddressOptions(walletType)
+
+      try {
+        await getAddress(getAddressOptions)
+      } catch (err) {
+        toast.error(`Install ${walletType} Wallet`, {
+          theme: 'colored',
+          autoClose: 3000,
+          position: toast.POSITION.BOTTOM_RIGHT
+        })
+      }
+    },
+    getAddressOptions(walletType) {
       const modalStore = useModalStore()
 
-      if (walletType === 'Xverse') {
-        try {
-          const getAddressOptions = {
-            payload: {
-              purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
-              message: 'Address for receiving Ordinals',
-              network: {
-                type: BitcoinNetworkType.Mainnet
-              }
-            },
-            onFinish: (response) => {
-              const address = response.addresses[0].address
-              //   const paymentAddress = response.addresses[1].address
-              //   const pubkey = response.addresses[0].publicKey
-              //   const paymentPubkey = response.addresses[1].publicKey
-              localStorage.setItem('walletType', walletType)
-              localStorage.setItem('walletAddress', address)
-              this.walletAddress = address
-              modalStore.closeModal()
-              toast.success('Xverse Wallet connected', {
-                theme: 'colored',
-                autoClose: 1000
-              })
-            },
-            onCancel: () => {
-              toast.warn('Request canceled', {
-                theme: 'colored',
-                autoClose: 1000
-              })
-            }
+      const networkType =
+        import.meta.VITE_NETWORK === 'testnet'
+          ? BitcoinNetworkType.Testnet
+          : BitcoinNetworkType.Mainnet
+
+      const options = {
+        payload: {
+          purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
+          message: 'Address for receiving Ordinals and payments',
+          network: {
+            type: networkType
           }
-          await getAddress(getAddressOptions)
-        } catch (err) {
-          toast.error('install Xverse Wallet', {
+        },
+        onFinish: (response) => {
+          const address = response.addresses[0].address
+          localStorage.setItem('walletType', walletType)
+          localStorage.setItem('walletAddress', address)
+          this.walletAddress = address
+          modalStore.closeModal()
+          toast.success(`${walletType} Wallet connected`, {
             theme: 'colored',
             autoClose: 1000
           })
-        }
-      } else if (walletType === 'MagicEden') {
-        try {
-          await getAddress({
-            getProvider: async () => {
-              return window.magicEden?.bitcoin
-            },
-            payload: {
-              purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
-              message: 'Address for receiving Ordinals and payments',
-              network: {
-                type:
-                  import.meta.VITE_NETWORK === 'testnet'
-                    ? BitcoinNetworkType.Testnet
-                    : BitcoinNetworkType.Mainnet
-              }
-            },
-            onFinish: (response) => {
-              const address = response.addresses[0].address
-              //   const paymentAddress = response.addresses[1].address
-              //   const pubkey = response.addresses[0].publicKey
-              //   const paymentPubkey = response.addresses[1].publicKey
-              localStorage.setItem('walletType', walletType)
-              localStorage.setItem('walletAddress', address)
-              this.walletAddress = address
-              modalStore.closeModal()
-              toast.success('Magic Eden Wallet connected', {
-                theme: 'colored',
-                autoClose: 1000
-              })
-            },
-            onCancel: () => {
-              toast.warn('Request canceled', {
-                theme: 'colored',
-                autoClose: 1000
-              })
-            }
-          })
-        } catch (err) {
-          toast.error('install Magic Eden Wallet', {
+        },
+        onCancel: () => {
+          toast.warn('Request canceled', {
             theme: 'colored',
             autoClose: 1000
           })
         }
       }
+
+      if (walletType === 'MagicEden') {
+        options.getProvider = async () => window.magicEden?.bitcoin
+      }
+
+      return options
     }
   }
 })

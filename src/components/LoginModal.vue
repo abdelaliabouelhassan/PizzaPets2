@@ -42,16 +42,18 @@
                   class="pt-6 mb-6 flex flex-col gap-y-6 text-center sm:ml-4 sm:mt-0 sm:text-left w-full"
                 >
                   <button
-                    class="border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-                    @click="authStore.WalletConnect(`MagicEden`)"
+                    class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
+                    @click="authStore.connectWallet('MagicEden')"
                   >
-                    Magic eden
+                    <img src="../assets/images/magic-eden-logo.png" class="h-4 w-4" alt="" />
+                    <span> Magic eden </span>
                   </button>
                   <button
-                    class="border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-                    @click="authStore.WalletConnect(`Xverse`)"
+                    class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
+                    @click="authStore.connectWallet('Xverse')"
                   >
-                    XVERSE
+                    <img src="../assets/images/xverse-logo.png" class="h-4 w-4 -ml-7" alt="" />
+                    <span> XVERSE </span>
                   </button>
                 </div>
               </div>
@@ -64,11 +66,10 @@
 </template>
 
 <script setup>
-  import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
-  import { useModalStore } from '@/stores/modal.js'
-  import { useAuthStore } from '@/stores/auth.js'
+import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { useModalStore } from '@/stores/modal.js'
+import { useAuthStore } from '@/stores/auth.js'
 
-  const modalStore = useModalStore()
-  const authStore = useAuthStore()
+const modalStore = useModalStore()
+const authStore = useAuthStore()
 </script>
-
