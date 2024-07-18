@@ -34,9 +34,9 @@ export const useAuthStore = defineStore('auth', {
             },
             onFinish: (response) => {
               const address = response.addresses[0].address
-              const paymentAddress = response.addresses[1].address
-              const pubkey = response.addresses[0].publicKey
-              const paymentPubkey = response.addresses[1].publicKey
+              //   const paymentAddress = response.addresses[1].address
+              //   const pubkey = response.addresses[0].publicKey
+              //   const paymentPubkey = response.addresses[1].publicKey
               localStorage.setItem('walletType', walletType)
               localStorage.setItem('walletAddress', address)
               this.walletAddress = address
@@ -79,9 +79,9 @@ export const useAuthStore = defineStore('auth', {
             onFinish: (response) => {
               console.log({ response })
               const address = response.addresses[0].address
-              const paymentAddress = response.addresses[1].address
-              const pubkey = response.addresses[0].publicKey
-              const paymentPubkey = response.addresses[1].publicKey
+              //   const paymentAddress = response.addresses[1].address
+              //   const pubkey = response.addresses[0].publicKey
+              //   const paymentPubkey = response.addresses[1].publicKey
               localStorage.setItem('walletType', walletType)
               localStorage.setItem('walletAddress', address)
               this.walletAddress = address
