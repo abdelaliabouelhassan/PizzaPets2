@@ -1,6 +1,11 @@
-const axios = require('axios')
+import { createClient } from "@supabase/supabase-js";
 
-const handler = async (event, context) => {
+const supabaseUrl = "https://vrfpbxzvzmbpgwiukskw.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyZnBieHp2em1icGd3aXVrc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMjAzMDAsImV4cCI6MjAzNjg5NjMwMH0.MEszPywJMv0eZ-SVQ8OKW8285lu4xp4aNc4HqBb1nY4";
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const handler = async (event) => {
     try {
         // Check if the request method is POST
         if (event.httpMethod !== "POST") {
@@ -38,10 +43,10 @@ const handler = async (event, context) => {
         }
 
         // Respond with a success message
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ message: "Webhook received successfully" }),
-        };
+        await supabase
+            .from('orders')
+            .update({ order_content: data })
+            .eq('order_id', data.id)
     } catch (error) {
         console.error("Error processing webhook:", error);
 
