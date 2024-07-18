@@ -18,6 +18,11 @@ export const useAuthStore = defineStore('auth', {
       this.walletAddress = ''
       localStorage.removeItem('walletAddress')
       localStorage.removeItem('walletType')
+      toast.success(`Wallet Disconnected`, {
+        theme: 'colored',
+        autoClose: 3000,
+        position: 'bottom-right'
+      })
     },
     async connectWallet(walletType) {
       const modalStore = useModalStore()
@@ -37,6 +42,11 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletAddress', addresses[0])
           this.walletAddress = addresses[0]
           modalStore.closeModal()
+          toast.success(`${walletType} Wallet Connected`, {
+            theme: 'colored',
+            autoClose: 3000,
+            position: 'bottom-right'
+          })
 
         } else if (walletType == "Leather") {
           const addressesRes = await window.btc.request(
@@ -50,16 +60,15 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletAddress', address.address)
           this.walletAddress = address.address
           modalStore.closeModal()
-
+          toast.success(`${walletType} Wallet Connected`, {
+            theme: 'colored',
+            autoClose: 3000,
+            position: 'bottom-right'
+          })
         } else {
           const getAddressOptions = this.getAddressOptions(walletType)
           await getAddress(getAddressOptions)
         }
-        toast.success(`${walletType} Wallet Connected`, {
-          theme: 'colored',
-          autoClose: 3000,
-          position: 'bottom-right'
-        })
       } catch (err) {
         console.log(err)
         toast.error(`Install ${walletType} Wallet`, {
@@ -71,6 +80,7 @@ export const useAuthStore = defineStore('auth', {
     },
     getAddressOptions(walletType) {
       const modalStore = useModalStore();
+
       const networkType =
         import.meta.VITE_NETWORK === 'testnet'
           ? BitcoinNetworkType.Testnet
@@ -90,6 +100,13 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletAddress', address)
           this.walletAddress = address
           modalStore.closeModal()
+
+          toast.success(`${walletType} Wallet Connected`, {
+            theme: 'colored',
+            autoClose: 3000,
+            position: 'bottom-right'
+          })
+
         },
         onCancel: () => {
           toast.error('Request canceled', {
