@@ -1,27 +1,11 @@
 <script setup>
-// import { supabase } from '@/utils/supabase'
+import { supabase } from '@/utils/supabase'
 import axios from 'axios'
 
 const sendInscription = async () => {
-  // const { data, error } = await supabase.from('orders').insert({
-  //   address: 'tb1pk5uh44r9hk9z33ygpkrqcnupaw28q07xvg9eu7utv4wv3d3q58pqj859wl',
-  //   order_id: '659193e72b8894ec341c8597c7efbb31b0b99f71706109a05d15d8df5ad9ad51i0'
-  // })
-  // const data = await supabase.from('orders').select()
-  // console.log(data)
   const response = await axios.post(
-    `https://testnet-api.ordinalsbot.com/inscribe`,
+    `https://${import.meta.env.VITE_NETWORK == 'testnet' && 'testnet-'}api.ordinalsbot.com/inscribe`,
     {
-      // files:[
-      //   {
-      //     name: "VHK",
-      //     size: 887,
-      //     dataURL: "https://static-testnet.unisat.io/content/659193e72b8894ec341c8597c7efbb31b0b99f71706109a05d15d8df5ad9ad51i0"
-      //   }
-      // ],
-      // receiveAddress:[
-
-      // ]
       files: [
         {
           size: 10,
@@ -40,7 +24,18 @@ const sendInscription = async () => {
     },
     { headers: { Accept: 'application/json', 'Content-Type': 'application/json' } }
   )
-  console.log(response)
+  const data = await supabase.from('orders').insert({
+    address: response.receiveAddress,
+    order_id: response.id,
+    order_status: response.state,
+    order_content: response
+  })
+  console.log(data)
+}
+
+const checkData = async () => {
+  const data = await supabase.from('orders').select()
+  console.log(data)
 }
 </script>
 <template>
@@ -51,6 +46,12 @@ const sendInscription = async () => {
       class="py-3 px-4 bg-[#FF5400] text-white text-[18px] h-[48px] min-w-[178px] border-4 border-black ring-4 ring-white hover:scale-105 duration-200 mr-1 cursor-pointer flex items-center justify-center"
     >
       Submit
+    </a>
+    <a
+      @click="checkData"
+      class="py-3 px-4 bg-[#FF5400] text-white text-[18px] h-[48px] min-w-[178px] border-4 border-black ring-4 ring-white hover:scale-105 duration-200 mr-1 cursor-pointer flex items-center justify-center"
+    >
+      checkDB
     </a>
   </div>
 </template>
