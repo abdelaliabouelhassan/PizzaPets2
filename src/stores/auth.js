@@ -31,10 +31,10 @@ export const useAuthStore = defineStore('auth', {
         if (walletType == "Unisat") {
           const unisat = window.unisat
           let network = await unisat.getNetwork()
-          if (network === "livenet" && import.meta.VITE_NETWORK === "testnet") {
+          if (network === "livenet" && import.meta.env.VITE_NETWORK === "testnet") {
             await unisat.switchNetwork("testnet")
           }
-          if (network === "testnet" && import.meta.VITE_NETWORK === "mainnet") {
+          if (network === "testnet" && import.meta.env.VITE_NETWORK === "mainnet") {
             await unisat.switchNetwork("livenet")
           }
           const addresses = await unisat.requestAccounts()
@@ -82,7 +82,7 @@ export const useAuthStore = defineStore('auth', {
       const modalStore = useModalStore();
 
       const networkType =
-        import.meta.VITE_NETWORK === 'testnet'
+        import.meta.env.VITE_NETWORK === 'testnet'
           ? BitcoinNetworkType.Testnet
           : BitcoinNetworkType.Mainnet
 
