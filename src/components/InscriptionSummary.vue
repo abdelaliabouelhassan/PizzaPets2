@@ -39,10 +39,10 @@ const sendInscription = async (parents) => {
     })
     try {
       const files = apiData.files.map((data) => ({
-        url: 'https://ordinalsbot-dev.s3.amazonaws.com/c14ff107-3f1c-42b9-8e70-e87f674d0530',
         name: `${data.label}.txt`,
-        type: 'text/plain',
-        size: new TextEncoder().encode(data.label).length
+        type: 'plain/text',
+        size: new TextEncoder().encode(data.label).length,
+        dataURL: `data:plain/text;base64,${btoa(data.label)}`
       }))
 
       const requestPayload = {
