@@ -41,34 +41,7 @@
                 <div
                   class="pt-6 mb-6 flex flex-col gap-y-6 text-center sm:ml-4 sm:mt-0 sm:text-left w-full"
                 >
-                  <button
-                    class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-                    @click="authStore.connectWallet('MagicEden')"
-                  >
-                    <img src="../assets/images/magic-eden-logo.png" class="h-4 w-4" alt="" />
-                    <span> Magic eden </span>
-                  </button>
-                  <button
-                    class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-                    @click="authStore.connectWallet('Xverse')"
-                  >
-                    <img src="../assets/images/xverse-logo.png" class="h-4 w-4 -ml-7" alt="" />
-                    <span> XVERSE </span>
-                  </button>
-                  <button
-                    class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-                    @click="authStore.connectWallet('Unisat')"
-                  >
-                    <img src="../assets/images/unisat.svg" class="h-4 w-4 -ml-7" alt="" />
-                    <span> Unisat </span>
-                  </button>
-                  <button
-                    class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-                    @click="authStore.connectWallet('Leather')"
-                  >
-                    <img src="../assets/images/leather.svg" class="h-4 w-4 -ml-5" alt="" />
-                    <span> Leather </span>
-                  </button>
+                  <slot />
                 </div>
               </div>
             </DialogPanel>
@@ -82,8 +55,6 @@
 <script setup>
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { useModalStore } from '@/stores/modal.js'
-import { useAuthStore } from '@/stores/auth.js'
 
 const modalStore = useModalStore()
-const authStore = useAuthStore()
 </script>
