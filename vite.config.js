@@ -1,10 +1,10 @@
 /* eslint-disable no-undef */
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import * as path from 'path'
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill'
 import inject from '@rollup/plugin-inject'
+import vue from '@vitejs/plugin-vue'
+import * as path from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [vue()],

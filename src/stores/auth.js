@@ -1,12 +1,14 @@
+import realtime from '@/utils/realtime'
 import { defineStore } from 'pinia'
-import { getAddress, BitcoinNetworkType, AddressPurpose } from 'sats-connect'
+import { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import { useModalStore } from './modal'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    walletAddress: localStorage.getItem('walletAddress') || ''
+    walletAddress: localStorage.getItem('walletAddress') || '',
+    channel: null
   }),
   getters: {
     isLoggedIn() {
@@ -18,6 +20,10 @@ export const useAuthStore = defineStore('auth', {
       this.walletAddress = ''
       localStorage.removeItem('walletAddress')
       localStorage.removeItem('walletType')
+      if (this.channel) {
+        this.channel.unsubscribe()
+        this.channel = null
+      }
       toast.success(`Wallet Disconnected`, {
         theme: 'colored',
         autoClose: 3000,
@@ -28,37 +34,33 @@ export const useAuthStore = defineStore('auth', {
       const modalStore = useModalStore()
 
       try {
-        if (walletType == "Unisat") {
+        if (walletType == 'Unisat') {
           const unisat = window.unisat
           let network = await unisat.getNetwork()
-          if (network === "livenet" && import.meta.env.VITE_NETWORK === "testnet") {
-            await unisat.switchNetwork("testnet")
+          if (network === 'livenet' && import.meta.env.VITE_NETWORK === 'testnet') {
+            await unisat.switchNetwork('testnet')
           }
-          if (network === "testnet" && import.meta.env.VITE_NETWORK === "mainnet") {
-            await unisat.switchNetwork("livenet")
+          if (network === 'testnet' && import.meta.env.VITE_NETWORK === 'mainnet') {
+            await unisat.switchNetwork('livenet')
           }
           const addresses = await unisat.requestAccounts()
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', addresses[0])
           this.walletAddress = addresses[0]
+          this.connectWebSocket()
           modalStore.closeModal()
           toast.success(`${walletType} Wallet Connected`, {
             theme: 'colored',
             autoClose: 3000,
             position: 'bottom-right'
           })
-
-        } else if (walletType == "Leather") {
-          const addressesRes = await window.btc.request(
-            "getAddresses",
-            {}
-          )
-          const address = addressesRes.result.addresses.find(
-            address => address.type === "p2tr"
-          )
+        } else if (walletType == 'Leather') {
+          const addressesRes = await window.btc.request('getAddresses', {})
+          const address = addressesRes.result.addresses.find((address) => address.type === 'p2tr')
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', address.address)
           this.walletAddress = address.address
+          this.connectWebSocket()
           modalStore.closeModal()
           toast.success(`${walletType} Wallet Connected`, {
             theme: 'colored',
@@ -79,7 +81,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     getAddressOptions(walletType) {
-      const modalStore = useModalStore();
+      const modalStore = useModalStore()
 
       const networkType =
         import.meta.env.VITE_NETWORK === 'testnet'
@@ -99,14 +101,13 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', address)
           this.walletAddress = address
+          this.connectWebSocket()
           modalStore.closeModal()
-
           toast.success(`${walletType} Wallet Connected`, {
             theme: 'colored',
             autoClose: 3000,
             position: 'bottom-right'
           })
-
         },
         onCancel: () => {
           toast.error('Request canceled', {
@@ -122,6 +123,18 @@ export const useAuthStore = defineStore('auth', {
       }
 
       return options
+    },
+    connectWebSocket() {
+      this.channel = realtime
+        .channel('orders-channel')
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'orders' },
+          (payload) => {
+            console.log('Change received!', payload)
+          }
+        )
+        .subscribe()
     }
   }
 })

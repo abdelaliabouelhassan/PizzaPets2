@@ -4,5 +4,7 @@
   publish = "dist"
 
 [dev]
+  framework = "vite"
   command = "vite"
   targetPort = 5173
+  port = 8888
