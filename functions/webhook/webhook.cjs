@@ -20,6 +20,8 @@ const handler = async (event) => {
     // Parse the incoming JSON payload
     const data = JSON.parse(event.body)
 
+    // TODO: check if data.id => order_id exists in db and return if it does not
+
     // Handle different states of the inscription order
     switch (data.state) {
       case 'waiting-confirmation':
