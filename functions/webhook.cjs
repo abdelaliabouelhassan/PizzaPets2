@@ -44,7 +44,7 @@ const handler = async (event) => {
         }
 
         // Respond with a success message
-        const { res, error } = await supabase
+        await supabase
             .from('orders')
             .update({ order_content: data })
             .eq('order_id', data.id)
