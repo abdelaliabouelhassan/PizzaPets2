@@ -1,32 +1,70 @@
 <script setup>
 import { supabase } from '@/utils/supabase'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
+const authStore = useAuthStore()
 const sendInscription = async () => {
-  const response = await axios.post(
-    `https://${import.meta.env.VITE_NETWORK == 'testnet' && 'testnet-'}api.ordinalsbot.com/inscribe`,
-    {
-      files: [
-        {
-          size: 10,
-          type: 'plain/text',
-          name: 'my-text-inscription-file.txt',
-          dataURL: 'data:plain/text;base64,dGVzdCBvcmRlcg==',
-          metadataDataURL:
-            'data:application/json;base64,ewogICAgImluc2NyaWJlZF9ieSI6ICJPcmRpbmFsc0JvdCIKfQ==',
-          metadataSize: 37
-        }
-      ],
-      lowPostage: true,
-      receiveAddress: 'tb1pk5uh44r9hk9z33ygpkrqcnupaw28q07xvg9eu7utv4wv3d3q58pqj859wl',
-      fee: '11',
-      webhookUrl: `${window.location.origin}/.netlify/functions/webhook`
-    },
-    { headers: { Accept: 'application/json', 'Content-Type': 'application/json' } }
-  )
+  // const response = await axios.post(
+  //   `https://${import.meta.env.VITE_NETWORK == 'testnet' && 'testnet-'}api.ordinalsbot.com/inscribe`,
+  //   {
+  //     files: [
+  //       {
+  //         size: 10,
+  //         type: 'plain/text',
+  //         name: 'my-text-inscription-file.txt',
+  //         dataURL: 'data:plain/text;base64,dGVzdCBvcmRlcg==',
+  //         metadataDataURL:
+  //           'data:application/json;base64,ewogICAgImluc2NyaWJlZF9ieSI6ICJPcmRpbmFsc0JvdCIKfQ==',
+  //         metadataSize: 37
+  //       }
+  //     ],
+  //     lowPostage: true,
+  //     receiveAddress: 'tb1pk5uh44r9hk9z33ygpkrqcnupaw28q07xvg9eu7utv4wv3d3q58pqj859wl',
+  //     fee: '11',
+  //     webhookUrl: `${import.meta.env.VITE_NETWORK == 'testnet' ? 'https://feed.pets.pizza' : window.location.origin}/.netlify/functions/webhook`
+  //   },
+  //   { headers: { Accept: 'application/json', 'Content-Type': 'application/json' } }
+  // )
+  // const { id } = await inscription.createDirectOrder(requestPayload)
+
+  // const handleDirectOrderButtonClick = async (parents) => {
+  //   setDirectOrderMessages('', 'Creating direct order...')
+  //   if (!paymentAddress || !ordinalsAddress) {
+  //     setDirectOrderMessages('Please connect your wallet', '')
+  //     return
+  //   }
+  //   try {
+  //     const files = [
+  //       {
+  //         url: 'https://ordinalsbot-dev.s3.amazonaws.com/c14ff107-3f1c-42b9-8e70-e87f674d0530',
+  //         size: 549,
+  //         name: 'btc-skull-3.jpg',
+  //         type: 'image/jpeg'
+  //       }
+  //     ]
+
+  //     const requestPayload = {
+  //       files: files,
+  //       parents,
+  //       receiveAddress: ordinalsAddress,
+  //       lowPostage: true,
+  //       fee: 9
+  //     }
+
+  //     const { id } = await inscription.createDirectOrder(requestPayload)
+
+  //     setDirectOrderMessages('', `Direct Order created successfully: ${id}`)
+  //     return true
+  //   } catch (error) {
+  //     setDirectOrderMessages('Something went wrong', '')
+  //     console.error('Something went wrong:', error)
+  //   }
+  // }
   const data = await supabase.from('orders').insert({
-    address: response.data.receiveAddress,
-    order_id: response.data.id
+    user_address: response.data.receiveAddress,
+    order_id: response.data.id,
+    receive_address: authStore.walletAddress
   })
   console.log(data)
 }

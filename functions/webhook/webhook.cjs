@@ -30,6 +30,56 @@ const handler = async (event) => {
           .update({ order_status: 'waiting-confirmation', order_content: data })
           .eq('order_id', data.id)
         break
+      case 'waiting-payment':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'waiting-payment', order_content: data })
+          .eq('order_id', data.id)
+      case 'waiting-parent':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'waiting-parent', order_content: data })
+          .eq('order_id', data.id)
+      case 'error':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'error', order_content: data })
+          .eq('order_id', data.id)
+      case 'cancelled':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'cancelled', order_content: data })
+          .eq('order_id', data.id)
+      case 'waiting-refund':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'waiting-refund', order_content: data })
+          .eq('order_id', data.id)
+      case 'refunded':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'refunded', order_content: data })
+          .eq('order_id', data.id)
+      case 'expired':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'expired', order_content: data })
+          .eq('order_id', data.id)
+      case 'waiting-reveal':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'waiting-reveal', order_content: data })
+          .eq('order_id', data.id)
+      case 'waiting-rune-balance':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'waiting-rune-balance', order_content: data })
+          .eq('order_id', data.id)
+      case 'completed':
+        await supabase
+          .from('orders')
+          .update({ order_status: 'completed', order_content: data })
+          .eq('order_id', data.id)
       case 'prep':
         await supabase
           .from('orders')
