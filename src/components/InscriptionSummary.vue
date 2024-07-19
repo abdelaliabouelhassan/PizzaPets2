@@ -78,10 +78,6 @@ const handleDirectOrderButtonClick = async () => {
   const parents = [] // Define the parents variable as needed
   await sendInscription(parents)
 }
-const checkDB = async () => {
-  const data = await supabase.from('orders').select()
-  console.log(data)
-}
 </script>
 
 <template>
@@ -92,12 +88,6 @@ const checkDB = async () => {
       class="py-3 px-4 bg-[#FF5400] text-white text-[18px] h-[48px] min-w-[178px] border-4 border-black ring-4 ring-white hover:scale-105 duration-200 mr-1 cursor-pointer flex items-center justify-center"
     >
       Submit
-    </a>
-    <a
-      @click="checkDB"
-      class="py-3 px-4 bg-[#FF5400] text-white text-[18px] h-[48px] min-w-[178px] border-4 border-black ring-4 ring-white hover:scale-105 duration-200 mr-1 cursor-pointer flex items-center justify-center"
-    >
-      Check
     </a>
   </div>
 </template>
