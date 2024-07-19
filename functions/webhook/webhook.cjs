@@ -7,9 +7,15 @@ const supabaseKey =
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+const updateOrderStatus = async (orderId, status, data) => {
+  await supabase
+    .from('orders')
+    .update({ order_status: status, order_content: data })
+    .eq('order_id', orderId)
+}
+
 const handler = async (event) => {
   try {
-    // Check if the request method is POST
     if (event.httpMethod !== 'POST') {
       return {
         statusCode: 405,
@@ -17,104 +23,27 @@ const handler = async (event) => {
       }
     }
 
-    // Parse the incoming JSON payload
     const data = JSON.parse(event.body)
+    const { state, id } = data
+    const validStates = [
+      'waiting-confirmation',
+      'waiting-payment',
+      'waiting-parent',
+      'error',
+      'cancelled',
+      'waiting-refund',
+      'refunded',
+      'expired',
+      'waiting-reveal',
+      'waiting-rune-balance',
+      'completed',
+      'prep',
+      'queued',
+      'file-inscribed'
+    ]
 
-    // TODO: check if data.id => order_id exists in db and return if it does not
-
-    // Handle different states of the inscription order
-    switch (data.state) {
-      case 'waiting-confirmation':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'waiting-confirmation', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'waiting-payment':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'waiting-payment', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'waiting-parent':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'waiting-parent', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'error':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'error', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'cancelled':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'cancelled', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'waiting-refund':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'waiting-refund', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'refunded':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'refunded', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'expired':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'expired', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'waiting-reveal':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'waiting-reveal', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'waiting-rune-balance':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'waiting-rune-balance', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'completed':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'completed', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'prep':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'prep', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'queued':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'queued', order_content: data })
-          .eq('order_id', data.id)
-        break
-      case 'file-inscribed':
-        await supabase
-          .from('orders')
-          .update({ order_status: 'file-inscribed', order_content: data })
-          .eq('order_id', data.id)
-        break
-      default:
-        await supabase
-          .from('orders')
-          .update({ order_status: 'unkown-state', order_content: data })
-          .eq('order_id', data.id)
-        break
-    }
+    const status = validStates.includes(state) ? state : 'unknown-state'
+    await updateOrderStatus(id, status, data)
 
     return {
       statusCode: 200,

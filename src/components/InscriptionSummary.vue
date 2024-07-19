@@ -2,80 +2,99 @@
 import { supabase } from '@/utils/supabase'
 import { useAuthStore } from '@/stores/auth'
 import { Ordinalsbot } from 'ordinalsbot'
+import { useApiData } from '@/stores/apidatas'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 
 // Initialize the toast notification
 const authStore = useAuthStore()
+const apiData = useApiData()
 
 const sendInscription = async (parents) => {
-  if (!authStore.walletAddress) {
-    toast.error(`Please connect your wallet`, {
+  if (apiData.parents.length == 0) {
+    toast.error(`Please select parents`, {
       theme: 'colored',
       autoClose: 3000,
       position: 'bottom-right'
     })
-    return
-  }
-  toast.success(`Creating direct order...`, {
-    theme: 'colored',
-    autoClose: 3000,
-    position: 'bottom-right'
-  })
-  try {
-    const files = [
-      {
-        url: 'https://ordinalsbot-dev.s3.amazonaws.com/c14ff107-3f1c-42b9-8e70-e87f674d0530',
-        size: 549,
-        name: 'btc-skull-3.jpg',
-        type: 'image/jpeg'
-      }
-    ]
-    const requestPayload = {
-      files: files,
-      parents,
-      receiveAddress: authStore.walletAddress,
-      lowPostage: true,
-      fee: 9,
-      webhookUrl: `${import.meta.env.VITE_NETWORK == 'testnet' ? 'https://feed.pets.pizza' : window.location.origin}/.netlify/functions/webhook`
-    }
-
-    const ordinalsbotObj = new Ordinalsbot('', import.meta.env.VITE_NETWORK)
-    const inscription = ordinalsbotObj.Inscription()
-    const response = await inscription.createDirectOrder(requestPayload)
-
-    const data = await supabase
-      .from('orders')
-      .insert({
-        user_address: authStore.walletAddress,
-        receive_address: response.receiveAddress,
-        order_id: response.id,
-        order_status: response.state,
-        transaction_sent: false,
-        order_content: response
+  } else if (apiData.files.length == 0) {
+    toast.error(`Please select feeds`, {
+      theme: 'colored',
+      autoClose: 3000,
+      position: 'bottom-right'
+    })
+  } else {
+    if (!authStore.walletAddress) {
+      toast.error(`Please connect your wallet`, {
+        theme: 'colored',
+        autoClose: 3000,
+        position: 'bottom-right'
       })
-      .select()
-    console.log(data)
-
-    toast.success(`Direct Order created successfully: ${response.id}`, {
+      return
+    }
+    toast.success(`Creating direct order...`, {
       theme: 'colored',
       autoClose: 3000,
       position: 'bottom-right'
     })
+    try {
+      const files = apiData.files.map((data) => ({
+        url: 'https://ordinalsbot-dev.s3.amazonaws.com/c14ff107-3f1c-42b9-8e70-e87f674d0530',
+        name: `${data.label}.txt`,
+        type: 'text/plain',
+        size: new TextEncoder().encode(data.label).length
+      }))
 
-    return true
-  } catch (error) {
-    toast.error(`Something went wrong`, {
-      theme: 'colored',
-      autoClose: 3000,
-      position: 'bottom-right'
-    })
-    console.error('Something went wrong:', error)
+      const requestPayload = {
+        files: files,
+        parents,
+        receiveAddress: authStore.walletAddress,
+        lowPostage: true,
+        fee: 9,
+        webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`
+      }
+
+      const ordinalsbotObj = new Ordinalsbot('', import.meta.env.VITE_NETWORK)
+      const inscription = ordinalsbotObj.Inscription()
+      const response = await inscription.createDirectOrder(requestPayload)
+
+      await supabase
+        .from('orders')
+        .insert({
+          user_address: authStore.walletAddress,
+          order_id: response.id,
+          order_status: response.state,
+          transaction_sent: false,
+          order_content: response
+        })
+        .select()
+
+      toast.success(`Direct Order created successfully: ${response.id}`, {
+        theme: 'colored',
+        autoClose: 3000,
+        position: 'bottom-right'
+      })
+
+      return true
+    } catch (error) {
+      toast.error(`Something went wrong`, {
+        theme: 'colored',
+        autoClose: 3000,
+        position: 'bottom-right'
+      })
+      console.error('Something went wrong:', error)
+    }
   }
 }
 
 const handleDirectOrderButtonClick = async () => {
-  const parents = [] // Define the parents variable as needed
+  console.log(apiData.parents)
+  const parents = apiData.parents.map((data) => ({
+    inscriptionId: data.inscriptionId,
+    returnAddress: data.address,
+    value: data.outSatoshi
+  }))
+
   await sendInscription(parents)
 }
 </script>

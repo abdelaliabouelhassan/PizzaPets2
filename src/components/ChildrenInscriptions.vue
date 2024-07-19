@@ -1,20 +1,20 @@
 <template>
-  <div class="mt-12 grid grid-cols-2 lg:grid-cols-6 gap-4">
+  <div class="grid grid-cols-2 gap-4 mt-12 lg:grid-cols-6">
     <div
       v-for="(option, index) in options"
       :key="index"
-      @click="toggleSelection(index)"
-      :class="selected.includes(index) ? 'border-white' : 'border-transparent'"
-      class="cursor-pointer p-4 shadow bg-black text-white border-4 hover:border-white flex flex-col items-center justify-center"
+      @click="toggleSelection(option)"
+      :class="apiData.files.includes(option) ? 'border-white' : 'border-transparent'"
+      class="flex flex-col items-center justify-center p-4 text-white bg-black border-4 shadow cursor-pointer hover:border-white"
     >
-      <img :src="getIconPath(option.label)" class="mb-2 h-6 w-6" alt="" />
+      <img :src="getIconPath(option.label)" class="w-6 h-6 mb-2" alt="" />
       <span class="text-lg">{{ option.label }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { useApiData } from '@/stores/apidatas'
 
 const options = [
   { label: 'Pizza' },
@@ -30,14 +30,12 @@ const options = [
   { label: 'Ketamine' },
   { label: 'Molly' }
 ]
-
-const selected = ref([])
-
+const apiData = useApiData()
 const toggleSelection = (index) => {
-  if (selected.value.includes(index)) {
-    selected.value = selected.value.filter((i) => i !== index)
+  if (apiData.files.includes(index)) {
+    apiData.files = apiData.files.filter((i) => i !== index)
   } else {
-    selected.value.push(index)
+    apiData.files.push(index)
   }
 }
 
