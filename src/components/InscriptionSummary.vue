@@ -1,9 +1,9 @@
 <script setup>
 import { supabase } from '@/utils/supabase'
-import axios from 'axios'
-import { useAuthStore } from '@/stores/auth'
+// import axios from 'axios'
+// import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
+// const authStore = useAuthStore()
 const sendInscription = async () => {
   // const response = await axios.post(
   //   `https://${import.meta.env.VITE_NETWORK == 'testnet' && 'testnet-'}api.ordinalsbot.com/inscribe`,
@@ -27,7 +27,6 @@ const sendInscription = async () => {
   //   { headers: { Accept: 'application/json', 'Content-Type': 'application/json' } }
   // )
   // const { id } = await inscription.createDirectOrder(requestPayload)
-
   // const handleDirectOrderButtonClick = async (parents) => {
   //   setDirectOrderMessages('', 'Creating direct order...')
   //   if (!paymentAddress || !ordinalsAddress) {
@@ -43,7 +42,6 @@ const sendInscription = async () => {
   //         type: 'image/jpeg'
   //       }
   //     ]
-
   //     const requestPayload = {
   //       files: files,
   //       parents,
@@ -51,9 +49,7 @@ const sendInscription = async () => {
   //       lowPostage: true,
   //       fee: 9
   //     }
-
   //     const { id } = await inscription.createDirectOrder(requestPayload)
-
   //     setDirectOrderMessages('', `Direct Order created successfully: ${id}`)
   //     return true
   //   } catch (error) {
@@ -61,12 +57,12 @@ const sendInscription = async () => {
   //     console.error('Something went wrong:', error)
   //   }
   // }
-  const data = await supabase.from('orders').insert({
-    user_address: response.data.receiveAddress,
-    order_id: response.data.id,
-    receive_address: authStore.walletAddress
-  })
-  console.log(data)
+  // const data = await supabase.from('orders').insert({
+  //   user_address: response.data.receiveAddress,
+  //   order_id: response.data.id,
+  //   receive_address: authStore.walletAddress
+  // })
+  // console.log(data)
 }
 
 const checkData = async () => {

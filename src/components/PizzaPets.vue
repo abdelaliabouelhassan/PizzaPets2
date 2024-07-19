@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth.js'
-import { useApiData } from '@/stores/apidatas'
+// import { useApiData } from '@/stores/apidatas'
 
 // State and reactive variables
 const pets = ref([])
@@ -10,7 +10,7 @@ const selectedPets = ref([])
 const currentPage = ref(1)
 const itemsPerPage = ref(8)
 const authStore = useAuthStore()
-const apiData = useApiData()
+// const apiData = useApiData()
 
 const tempData = [
   {
