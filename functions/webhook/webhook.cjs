@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { createClient } from '@supabase/supabase-js'
+const { createClient } = require('@supabase/supabase-js')
 
 const supabaseUrl = 'https://vrfpbxzvzmbpgwiukskw.supabase.co'
 const supabaseKey =
