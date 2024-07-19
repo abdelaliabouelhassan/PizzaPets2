@@ -25,10 +25,8 @@ const sendInscription = async () => {
     { headers: { Accept: 'application/json', 'Content-Type': 'application/json' } }
   )
   const data = await supabase.from('orders').insert({
-    address: response.receiveAddress,
-    order_id: response.id,
-    order_status: response.state,
-    order_content: response
+    address: response.data.receiveAddress,
+    order_id: response.data.id
   })
   console.log(data)
 }
