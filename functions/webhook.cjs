@@ -12,7 +12,7 @@ const handler = async (event) => {
         if (event.httpMethod !== "POST") {
             return {
                 statusCode: 405,
-                body: "Method Not Allowed",
+                body: JSON.stringify({ message: "Method Not Allowed" }),
             };
         }
 
@@ -48,6 +48,11 @@ const handler = async (event) => {
             .from('orders')
             .update({ order_content: data })
             .eq('order_id', data.id)
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: "Webhook processed successfully" }),
+        };
     } catch (error) {
         console.error("Error processing webhook:", error);
 
