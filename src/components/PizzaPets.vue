@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth.js'
+// import { useApiData } from '@/stores/apidatas'
 
 // State and reactive variables
 const pets = ref([])
@@ -9,6 +10,7 @@ const selectedPets = ref([])
 const currentPage = ref(1)
 const itemsPerPage = ref(8)
 const authStore = useAuthStore()
+// const apiData = useApiData()
 
 const tempData = [
   {
@@ -63,6 +65,7 @@ const toggleSelection = (pet) => {
   if (index !== -1) {
     selectedPets.value = selectedPets.value.filter((f) => f.inscription_id !== pet.inscription_id)
   } else {
+    console.log(selectedPets.value)
     selectedPets.value.push(pet)
   }
 }
@@ -107,10 +110,10 @@ const goToPage = (page) => {
 
 <template>
   <div class="max-w-[1140px] m-4">
-    <div class="grid gap-x-4 gap-y-8 grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+    <div class="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
       <div v-for="(pet, i) in paginatedPets" :key="i" class="relative">
         <div
-          class="group bg-gray-100 focus-within:ring-2 h-full focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 cursor-pointer hover:scale-105 duration-200"
+          class="h-full duration-200 bg-gray-100 cursor-pointer group focus-within:ring-2 focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 hover:scale-105"
           :class="{
             'ring-4 ring-white': selectedPets.some((p) => p.inscription_id === pet.inscription_id)
           }"
@@ -120,13 +123,13 @@ const goToPage = (page) => {
             v-if="pet.content_type.startsWith('image/')"
             :src="pet.content_url"
             alt=""
-            class="object-cover h-full w-full group-hover:opacity-75"
+            class="object-cover w-full h-full group-hover:opacity-75"
           />
           <video
             v-else-if="pet.content_type.startsWith('video/')"
             autoplay
             loop
-            class="object-cover h-full w-full group-hover:opacity-75"
+            class="object-cover w-full h-full group-hover:opacity-75"
           >
             <source :src="pet.content_url" :type="pet.content_type" />
           </video>
@@ -134,13 +137,13 @@ const goToPage = (page) => {
             v-else-if="pet.content_type.startsWith('text/')"
             :src="pet.content_url"
             :title="`text ${i + 1}`"
-            class="h-full w-full object-cover group-hover:opacity-75"
+            class="object-cover w-full h-full group-hover:opacity-75"
           ></iframe>
           <iframe
             v-else-if="pet.content_type.startsWith('text/html')"
             :src="pet.content_url"
             :title="`html ${i + 1}`"
-            class="h-full w-full object-cover group-hover:opacity-75"
+            class="object-cover w-full h-full group-hover:opacity-75"
           ></iframe>
         </div>
       </div>
