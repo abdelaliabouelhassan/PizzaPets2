@@ -1,4 +1,5 @@
 import realtime from '@/utils/realtime'
+import { Ordinalsbot } from 'ordinalsbot'
 import { defineStore } from 'pinia'
 import { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
 import { toast } from 'vue3-toastify'
@@ -131,14 +132,20 @@ export const useAuthStore = defineStore('auth', {
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'orders' },
           async (payload) => {
-            console.log('Change received!', payload)
-            // createParentChildPsbt(payload.new.order_id)
-            // if (payload.new.order_status === 'waiting-parent') {
-            //   const ordinalsbotObj = new Ordinalsbot('', import.meta.env.VITE_NETWORK)
-            //   const inscription = ordinalsbotObj.Inscription()
-            //   const response = await inscription.createParentChildPsbt(payload.new.order_id)
-            //   console.log(response)
-            // }
+            if (payload.new.order_status === 'waiting-parent') {
+              const ordinalsbotObj = new Ordinalsbot('', import.meta.env.VITE_NETWORK)
+              const inscription = ordinalsbotObj.Inscription()
+              const params = {
+                orderId: payload.new.order_id, // The ID of the order for which to create the PSBT.
+                paymentAddress: payload.new.user_address,
+                paymentPublicKey: payload.new.user_address,
+                ordinalPublicKey: payload.new.user_address,
+                feeRate: 10
+              }
+              console.log('createParentChildPsbt params:', params)
+              const response = await inscription.createParentChildPsbt(params)
+              console.log('response', response)
+            }
           }
         )
         .subscribe()
