@@ -98,6 +98,7 @@ export const useAuthStore = defineStore('auth', {
           }
         },
         onFinish: (response) => {
+          console.log('Addresses', response)
           const address = response.addresses[0].address
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', address)
@@ -140,7 +141,8 @@ export const useAuthStore = defineStore('auth', {
                 paymentAddress: payload.new.user_address,
                 paymentPublicKey: payload.new.user_address,
                 ordinalPublicKey: payload.new.user_address,
-                feeRate: 10
+                feeRate: 10,
+                walletProvider: 'Xverse'
               }
               console.log('createParentChildPsbt params:', params)
               const response = await inscription.createParentChildPsbt(params)
