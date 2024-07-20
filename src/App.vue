@@ -5,23 +5,24 @@ import ChildrenInscriptions from './components/ChildrenInscriptions.vue'
 import InscriptionSummary from './components/InscriptionSummary.vue'
 import { computed, watch, onMounted } from 'vue'
 import { useAuthStore } from './stores/auth'
+import { useWebSocketStore } from './stores/websocket'
 
 const authStore = useAuthStore()
+const webSocketStore = useWebSocketStore()
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 
 watch(isLoggedIn, (newVal) => {
   if (newVal) {
-    authStore.connectWebSocket()
-  } else if (authStore.channel) {
-    authStore.channel.unsubscribe()
-    authStore.channel = null
+    webSocketStore.connectWebSocket()
+  } else {
+    webSocketStore.disconnectWebSocket()
   }
 })
 
 onMounted(() => {
   if (isLoggedIn.value) {
-    authStore.connectWebSocket()
+    webSocketStore.connectWebSocket()
   }
 })
 </script>

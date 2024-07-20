@@ -1,15 +1,13 @@
-import realtime from '@/utils/realtime'
-import { Ordinalsbot } from 'ordinalsbot'
 import { defineStore } from 'pinia'
 import { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import { useModalStore } from './modal'
+import { useWebSocketStore } from './websocket'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    walletAddress: localStorage.getItem('walletAddress') || '',
-    channel: null
+    walletAddress: localStorage.getItem('walletAddress') || ''
   }),
   getters: {
     isLoggedIn() {
@@ -21,10 +19,8 @@ export const useAuthStore = defineStore('auth', {
       this.walletAddress = ''
       localStorage.removeItem('walletAddress')
       localStorage.removeItem('walletType')
-      if (this.channel) {
-        this.channel.unsubscribe()
-        this.channel = null
-      }
+      const webSocketStore = useWebSocketStore()
+      webSocketStore.disconnectWebSocket()
       toast.success(`Wallet Disconnected`, {
         theme: 'colored',
         autoClose: 3000,
@@ -33,6 +29,7 @@ export const useAuthStore = defineStore('auth', {
     },
     async connectWallet(walletType) {
       const modalStore = useModalStore()
+      const webSocketStore = useWebSocketStore()
 
       try {
         if (walletType == 'Unisat') {
@@ -48,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', addresses[0])
           this.walletAddress = addresses[0]
-          this.connectWebSocket()
+          webSocketStore.connectWebSocket()
           modalStore.closeModal()
           toast.success(`${walletType} Wallet Connected`, {
             theme: 'colored',
@@ -61,7 +58,7 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', address.address)
           this.walletAddress = address.address
-          this.connectWebSocket()
+          webSocketStore.connectWebSocket()
           modalStore.closeModal()
           toast.success(`${walletType} Wallet Connected`, {
             theme: 'colored',
@@ -83,6 +80,7 @@ export const useAuthStore = defineStore('auth', {
     },
     getAddressOptions(walletType) {
       const modalStore = useModalStore()
+      const webSocketStore = useWebSocketStore()
 
       const networkType =
         import.meta.env.VITE_NETWORK === 'testnet'
@@ -103,7 +101,7 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', address)
           this.walletAddress = address
-          this.connectWebSocket()
+          webSocketStore.connectWebSocket()
           modalStore.closeModal()
           toast.success(`${walletType} Wallet Connected`, {
             theme: 'colored',
@@ -125,32 +123,6 @@ export const useAuthStore = defineStore('auth', {
       }
 
       return options
-    },
-    connectWebSocket() {
-      this.channel = realtime
-        .channel('orders-channel')
-        .on(
-          'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'orders' },
-          async (payload) => {
-            if (payload.new.order_status === 'waiting-parent') {
-              const ordinalsbotObj = new Ordinalsbot('', import.meta.env.VITE_NETWORK)
-              const inscription = ordinalsbotObj.Inscription()
-              const params = {
-                orderId: payload.new.order_id, // The ID of the order for which to create the PSBT.
-                paymentAddress: payload.new.user_address,
-                paymentPublicKey: payload.new.user_address,
-                ordinalPublicKey: payload.new.user_address,
-                feeRate: 10,
-                walletProvider: 'Xverse'
-              }
-              console.log('createParentChildPsbt params:', params)
-              const response = await inscription.createParentChildPsbt(params)
-              console.log('response', response)
-            }
-          }
-        )
-        .subscribe()
     }
   }
 })
