@@ -53,7 +53,7 @@ const sendInscription = async (parents) => {
         webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`
       }
 
-      const inscription = this.$inscription.Inscription()
+      const inscription = this.inscription.Inscription()
       const response = await inscription.createDirectOrder(requestPayload)
 
       await supabase
