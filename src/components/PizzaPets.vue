@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth.js'
-import { useApiData } from '@/stores/apidatas'
+import { useApiData } from '@/stores/apidata'
 
 // State and reactive variables
 const pets = ref([])

@@ -131,7 +131,8 @@ export const useAuthStore = defineStore('auth', {
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'orders' },
           (payload) => {
-            console.log('Change received!', payload)
+            console.log('Change received!', payload.new.odrder_id)
+            // createParentChildPsbt(payload.new.order_id)
           }
         )
         .subscribe()

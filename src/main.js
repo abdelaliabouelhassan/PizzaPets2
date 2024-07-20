@@ -1,4 +1,4 @@
-import { Ordinalsbot } from 'ordinalsbot'
+import { Inscription } from 'ordinalsbot'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -8,9 +8,9 @@ const app = createApp(App)
 
 const pinia = createPinia()
 
-const ordinalsbot = new Ordinalsbot('apikey', 'testnet')
+const inscription = new Inscription('', import.meta.env.VITE_NETWORK)
 
-app.use(ordinalsbot)
+app.use(inscription)
 app.use(pinia)
 
 app.mount('#app')
