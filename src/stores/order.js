@@ -9,13 +9,13 @@ import { defineStore } from 'pinia'
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
-    orderId: '',
+    currentOrderId: '',
     fetching: false,
     orders: []
   }),
   getters: {
-    getOrderId() {
-      return this.orderId
+    getCurrentOrderId() {
+      return this.currentOrderId
     },
     getOrders() {
       return this.orders
@@ -25,6 +25,32 @@ export const useOrderStore = defineStore('order', {
     }
   },
   actions: {
+    async createParentChildPsbt(orderId) {
+      const fee = await getMempoolFeeSummary()
+
+      const order = this.findOrderById(orderId)
+
+      const payload = {
+        orderId: order.order_id,
+        paymentAddress: order.payment_address,
+        paymentPublicKey: order.payment_address_public_key,
+        ordinalPublicKey: order.ordinal_address_public_key,
+        feeRate: fee
+      }
+
+      console.log('createParentChildPsbt payload:', payload)
+
+      const ordinalsbot = getOrdinalsbotInstance()
+      const inscription = ordinalsbot.Inscription()
+
+      try {
+        const response = await inscription.createParentChildPsbt(payload)
+        console.log('Response:', response)
+      } catch (error) {
+        console.error('Failed to create Parent Child PSBT:', error)
+        showToast('Failed to create Parent Child PSBT', 'error')
+      }
+    },
     createChildrenFilesPayload(files) {
       return files.map((data) => ({
         name: `${data.label}.txt`,
@@ -90,10 +116,9 @@ export const useOrderStore = defineStore('order', {
 
         await this.insertOrderToSupabase(response)
 
-        this.orderId = response.id
+        this.currentOrderId = response.id
 
         modalStore.openModal('order-summary')
-
         this.fetching = false
         return true
       } catch (error) {
@@ -127,6 +152,9 @@ export const useOrderStore = defineStore('order', {
     toggleChildrenSelectionFromOrder(option) {
       const apiData = useApiData()
       apiData.toggleChildrenSelection(option)
+    },
+    findOrderById(orderId) {
+      return this.orders.find((order) => order.order_id === orderId)
     }
   }
 })

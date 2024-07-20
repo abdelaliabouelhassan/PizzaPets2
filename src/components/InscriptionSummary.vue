@@ -40,7 +40,7 @@ watch(
   </div>
 
   <AppModal modalId="order-summary">
-    <h1>ORDER ID: {{ orderStore.getOrderId }}</h1>
-    <h1>ORDERS: {{ orderStore.getOrders }}</h1>
+    <h1>CURRENT ORDER ID: {{ orderStore.getCurrentOrderId }}</h1>
+    <h1>ALL ORDERS: {{ orderStore.getOrders }}</h1>
   </AppModal>
 </template>
