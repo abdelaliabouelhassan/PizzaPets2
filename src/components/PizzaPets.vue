@@ -35,7 +35,7 @@ const toggleSelection = (pet) => {
 
 // Watch for changes in wallet address
 watch(
-  () => authStore.walletAddress,
+  () => authStore.paymentAddress,
   (newAddress, oldAddress) => {
     if (newAddress !== oldAddress) {
       if (newAddress) {
@@ -50,7 +50,7 @@ watch(
 
 // Fetch pets on component mount if wallet address is available
 onMounted(() => {
-  if (authStore.walletAddress) {
+  if (authStore.paymentAddress) {
     fetchPets()
   }
 })

@@ -2,7 +2,7 @@
 import AppModal from './AppModal.vue'
 import { useModalStore } from '@/stores/modal.js'
 import { useAuthStore } from '@/stores/auth.js'
-import { addressShortening } from '@/utils/address.js'
+import { formatAddress } from '@/utils/address.js'
 
 const modalStore = useModalStore()
 const authStore = useAuthStore()
@@ -23,7 +23,7 @@ const login = async (provider) => {
       @click="!authStore.isLoggedIn ? modalStore.openModal() : authStore.signOut()"
       class="py-3 px-4 bg-[#FF5400] text-white text-[18px] h-[48px] min-w-[178px] border-4 border-black ring-4 ring-white hover:scale-105 duration-200 mr-1 cursor-pointer flex items-center justify-center"
     >
-      {{ !authStore.isLoggedIn ? 'Connect wallet' : addressShortening(authStore.walletAddress) }}
+      {{ !authStore.isLoggedIn ? 'Connect wallet' : formatAddress(authStore.getPaymentAddress) }}
     </button>
   </header>
 
@@ -48,13 +48,6 @@ const login = async (provider) => {
     >
       <img src="../assets/images/unisat.svg" class="h-4 w-4 -ml-7" alt="" />
       <span> Unisat </span>
-    </button>
-    <button
-      class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-      @click="login('Leather')"
-    >
-      <img src="../assets/images/leather.svg" class="h-4 w-4 -ml-5" alt="" />
-      <span> Leather </span>
     </button>
   </AppModal>
 </template>
