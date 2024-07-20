@@ -2,8 +2,6 @@ import { defineStore } from 'pinia'
 import { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
-import { useModalStore } from './modal'
-import { useWebSocketStore } from './websocket'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -19,18 +17,8 @@ export const useAuthStore = defineStore('auth', {
       this.walletAddress = ''
       localStorage.removeItem('walletAddress')
       localStorage.removeItem('walletType')
-      const webSocketStore = useWebSocketStore()
-      webSocketStore.disconnectWebSocket()
-      toast.success(`Wallet Disconnected`, {
-        theme: 'colored',
-        autoClose: 3000,
-        position: 'bottom-right'
-      })
     },
     async connectWallet(walletType) {
-      const modalStore = useModalStore()
-      const webSocketStore = useWebSocketStore()
-
       try {
         if (walletType == 'Unisat') {
           const unisat = window.unisat
@@ -45,26 +33,12 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', addresses[0])
           this.walletAddress = addresses[0]
-          webSocketStore.connectWebSocket()
-          modalStore.closeModal()
-          toast.success(`${walletType} Wallet Connected`, {
-            theme: 'colored',
-            autoClose: 3000,
-            position: 'bottom-right'
-          })
         } else if (walletType == 'Leather') {
           const addressesRes = await window.btc.request('getAddresses', {})
           const address = addressesRes.result.addresses.find((address) => address.type === 'p2tr')
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', address.address)
           this.walletAddress = address.address
-          webSocketStore.connectWebSocket()
-          modalStore.closeModal()
-          toast.success(`${walletType} Wallet Connected`, {
-            theme: 'colored',
-            autoClose: 3000,
-            position: 'bottom-right'
-          })
         } else {
           const getAddressOptions = this.getAddressOptions(walletType)
           await getAddress(getAddressOptions)
@@ -79,9 +53,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     getAddressOptions(walletType) {
-      const modalStore = useModalStore()
-      const webSocketStore = useWebSocketStore()
-
       const networkType =
         import.meta.env.VITE_NETWORK === 'testnet'
           ? BitcoinNetworkType.Testnet
@@ -101,13 +72,6 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('walletType', walletType)
           localStorage.setItem('walletAddress', address)
           this.walletAddress = address
-          webSocketStore.connectWebSocket()
-          modalStore.closeModal()
-          toast.success(`${walletType} Wallet Connected`, {
-            theme: 'colored',
-            autoClose: 3000,
-            position: 'bottom-right'
-          })
         },
         onCancel: () => {
           toast.error('Request canceled', {

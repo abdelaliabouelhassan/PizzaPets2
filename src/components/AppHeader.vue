@@ -6,6 +6,11 @@ import { addressShortening } from '@/utils/address.js'
 
 const modalStore = useModalStore()
 const authStore = useAuthStore()
+
+const login = async (provider) => {
+  await authStore.connectWallet(provider)
+  modalStore.closeModal()
+}
 </script>
 
 <template>
@@ -25,28 +30,28 @@ const authStore = useAuthStore()
   <AppModal>
     <button
       class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-      @click="authStore.connectWallet('MagicEden')"
+      @click="login('MagicEden')"
     >
       <img src="../assets/images/magic-eden-logo.png" class="h-4 w-4" alt="" />
       <span> Magic eden </span>
     </button>
     <button
       class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-      @click="authStore.connectWallet('Xverse')"
+      @click="login('Xverse')"
     >
       <img src="../assets/images/xverse-logo.png" class="h-4 w-4 -ml-7" alt="" />
       <span> XVERSE </span>
     </button>
     <button
       class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-      @click="authStore.connectWallet('Unisat')"
+      @click="login('Unisat')"
     >
       <img src="../assets/images/unisat.svg" class="h-4 w-4 -ml-7" alt="" />
       <span> Unisat </span>
     </button>
     <button
       class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
-      @click="authStore.connectWallet('Leather')"
+      @click="login('Leather')"
     >
       <img src="../assets/images/leather.svg" class="h-4 w-4 -ml-5" alt="" />
       <span> Leather </span>
