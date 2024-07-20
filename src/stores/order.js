@@ -119,6 +119,14 @@ export const useOrderStore = defineStore('order', {
       } else {
         this.orders.push(order)
       }
+    },
+    toggleParentSelectionFromOrder(pet) {
+      const apiData = useApiData()
+      apiData.toggleParentSelection(pet)
+    },
+    toggleChildrenSelectionFromOrder(option) {
+      const apiData = useApiData()
+      apiData.toggleChildrenSelection(option)
     }
   }
 })

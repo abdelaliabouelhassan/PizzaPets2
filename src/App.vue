@@ -1,5 +1,5 @@
 <script setup>
-import AppHeader from './components/AppHeader.vue'
+import AppHeader from './components/ui/AppHeader.vue'
 import PizzaPets from './components/PizzaPets.vue'
 import ChildrenInscriptions from './components/ChildrenInscriptions.vue'
 import InscriptionSummary from './components/InscriptionSummary.vue'

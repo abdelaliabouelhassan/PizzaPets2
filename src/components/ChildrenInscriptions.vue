@@ -1,10 +1,12 @@
 <script setup>
 import { useApiData } from '@/stores/apidata'
+import { useOrderStore } from '@/stores/order'
 
 const apiData = useApiData()
+const orderStore = useOrderStore()
 
 const toggleChildrenSelection = (label) => {
-  apiData.toggleChildrenSelection(label)
+  orderStore.toggleChildrenSelectionFromOrder(label)
 }
 
 const getIconPath = (label) => {
