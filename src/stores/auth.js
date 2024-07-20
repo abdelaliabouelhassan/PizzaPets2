@@ -5,7 +5,12 @@ import 'vue3-toastify/dist/index.css'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    walletAddress: localStorage.getItem('walletAddress') || ''
+    // TODO: remove wallet address from and use the fields below instead
+    walletAddress: localStorage.getItem('walletAddress') || '',
+    paymentAddress: localStorage.getItem('paymentAddress') || '',
+    paymentAddressPublicKey: localStorage.getItem('paymentAddressPublicKey') || '',
+    ordinalAddress: localStorage.getItem('ordinalAddress') || '',
+    ordinalAddressPublicKey: localStorage.getItem('ordinalAddressPublicKey') || ''
   }),
   getters: {
     isLoggedIn() {

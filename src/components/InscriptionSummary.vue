@@ -24,7 +24,7 @@ const sendInscription = async (parents) => {
       position: 'bottom-right'
     })
   } else {
-    if (!authStore.walletAddress) {
+    if (!authStore.ordinalAddress) {
       toast.error(`Please connect your wallet`, {
         theme: 'colored',
         autoClose: 3000,
@@ -48,7 +48,7 @@ const sendInscription = async (parents) => {
       const requestPayload = {
         files: files,
         parents,
-        receiveAddress: authStore.walletAddress,
+        receiveAddress: authStore.ordinalAddress,
         lowPostage: true,
         fee: 9,
         webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`
@@ -61,10 +61,12 @@ const sendInscription = async (parents) => {
       await supabase
         .from('orders')
         .insert({
-          user_address: authStore.walletAddress,
+          payment_address: authStore.paymentAddress,
+          payment_address_public_key: authStore.paymentAddressPublicKey,
+          ordinal_address: authStore.ordinalAddress,
+          ordinal_address_public_key: authStore.ordinalAddressPublicKey,
           order_id: response.id,
           order_status: response.state,
-          transaction_sent: false,
           order_content: response
         })
         .select()
