@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps } from 'vue'
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { useModalStore } from '@/stores/modal.js'
 

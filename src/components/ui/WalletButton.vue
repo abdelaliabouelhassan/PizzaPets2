@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps } from 'vue'
 import { useModalStore } from '@/stores/modal.js'
 import { useAuthStore } from '@/stores/auth.js'
 import AppButton from '@/components/ui/AppButton.vue'
