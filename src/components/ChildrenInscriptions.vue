@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { useApiData } from '@/stores/apidatas'
+import { useApiData } from '@/stores/apidata'
 
 const options = [
   { label: 'Pizza' },

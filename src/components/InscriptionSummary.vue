@@ -1,7 +1,7 @@
 <script setup>
 import { supabase } from '@/utils/supabase'
 import { useAuthStore } from '@/stores/auth'
-import { useApiData } from '@/stores/apidatas'
+import { useApiData } from '@/stores/apidata'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 
