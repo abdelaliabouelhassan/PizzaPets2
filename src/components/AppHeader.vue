@@ -2,14 +2,14 @@
 import AppModal from './AppModal.vue'
 import { useModalStore } from '@/stores/modal.js'
 import { useAuthStore } from '@/stores/auth.js'
-import { formatAddress } from '@/utils/address.js'
+import { formatAddress } from '@/utils/formatAddress.js'
 
 const modalStore = useModalStore()
 const authStore = useAuthStore()
 
 const login = async (provider) => {
   await authStore.connectWallet(provider)
-  modalStore.closeModal()
+  modalStore.closeModal('login')
 }
 </script>
 
@@ -20,14 +20,14 @@ const login = async (provider) => {
     </div>
 
     <button
-      @click="!authStore.isLoggedIn ? modalStore.openModal() : authStore.signOut()"
+      @click="!authStore.isLoggedIn ? modalStore.openModal('login') : authStore.signOut()"
       class="py-3 px-4 bg-[#FF5400] text-white text-[18px] h-[48px] min-w-[178px] border-4 border-black ring-4 ring-white hover:scale-105 duration-200 mr-1 cursor-pointer flex items-center justify-center"
     >
       {{ !authStore.isLoggedIn ? 'Connect wallet' : formatAddress(authStore.getPaymentAddress) }}
     </button>
   </header>
 
-  <AppModal>
+  <AppModal modalId="login">
     <button
       class="flex items-center justify-center gap-x-3 border-4 border-black ring-4 ring-white w-[220px] mx-auto text-center p-2 text-white cursor-pointer hover:scale-105 duration-200"
       @click="login('MagicEden')"

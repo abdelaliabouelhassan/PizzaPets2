@@ -3,16 +3,15 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useApiData } from '@/stores/apidata'
 
-// State and reactive variables
 const currentPage = ref(1)
 const itemsPerPage = ref(8)
 const authStore = useAuthStore()
 const apiData = useApiData()
 
-// Computed property for ordinal address
 const ordinalAddress = computed(() => authStore.getOrdinalAddress)
 
-// Watch for changes in ordinal address
+const getPets = computed(() => apiData.getPets)
+
 watch(
   ordinalAddress,
   (newAddress, oldAddress) => {
@@ -20,29 +19,31 @@ watch(
       if (newAddress) {
         apiData.fetchPets(newAddress)
       } else {
-        apiData.pets = []
-        apiData.parents = []
+        apiData.$patch({
+          pets: [],
+          parents: [],
+          files: [],
+          orders: []
+        })
       }
     }
   },
   { immediate: true }
 )
 
-// Fetch pets on component mount if ordinal address is available
 onMounted(() => {
   if (ordinalAddress.value) {
     apiData.fetchPets(ordinalAddress.value)
   }
 })
 
-// Pagination logic
 const paginatedPets = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  return apiData.pets.slice(start, end)
+  return getPets.value?.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(apiData.pets.length / itemsPerPage.value))
+const totalPages = computed(() => Math.ceil(getPets.value?.length / itemsPerPage.value))
 
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
@@ -58,9 +59,11 @@ const goToPage = (page) => {
         <div
           class="h-full duration-200 bg-gray-100 cursor-pointer group focus-within:ring-2 focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 hover:scale-105"
           :class="{
-            'ring-4 ring-black': apiData.parents.some((p) => p.inscriptionId === pet.inscriptionId)
+            'ring-4 ring-black': apiData.getParents.some(
+              (p) => p.inscriptionId === pet.inscriptionId
+            )
           }"
-          @click="apiData.toggleSelection(pet)"
+          @click="apiData.toggleParentSelection(pet)"
         >
           <img
             v-if="pet.contentType.startsWith('image/')"
@@ -103,9 +106,9 @@ const goToPage = (page) => {
       >
         Previous
       </button>
-      <span v-if="totalPages > 1" class="px-4 py-2 mx-1 text-white"
-        >{{ currentPage }} / {{ totalPages }}</span
-      >
+      <span v-if="totalPages > 1" class="px-4 py-2 mx-1 text-white">
+        {{ currentPage }} / {{ totalPages }}
+      </span>
       <button
         :class="currentPage < totalPages ? 'visible' : 'invisible'"
         class="px-4 py-2 mx-1 bg-black text-white w-[100px]"

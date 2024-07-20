@@ -1,6 +1,23 @@
+<script setup>
+import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { useModalStore } from '@/stores/modal.js'
+import { defineProps } from 'vue'
+
+const props = defineProps({
+  modalId: {
+    type: String,
+    required: true
+  }
+})
+
+const { modalId } = props
+
+const modalStore = useModalStore()
+</script>
+
 <template>
-  <TransitionRoot as="template" :show="modalStore.open">
-    <Dialog class="relative z-10" @close="modalStore.closeModal">
+  <TransitionRoot as="template" :show="modalStore.isOpen(modalId)">
+    <Dialog class="relative z-10" @close="modalStore.closeModal(modalId)">
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
@@ -32,7 +49,7 @@
               <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                 <button
                   class="text-white text-2xl focus:outline-none"
-                  @click="modalStore.closeModal"
+                  @click="modalStore.closeModal(modalId)"
                 >
                   x
                 </button>
@@ -51,10 +68,3 @@
     </Dialog>
   </TransitionRoot>
 </template>
-
-<script setup>
-import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { useModalStore } from '@/stores/modal.js'
-
-const modalStore = useModalStore()
-</script>

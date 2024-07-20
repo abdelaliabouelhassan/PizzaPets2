@@ -1,6 +1,6 @@
-// src/stores/websocket.js
 import realtime from '@/utils/realtime'
 import { defineStore } from 'pinia'
+import { useApiData } from './apidata'
 
 export const useWebSocketStore = defineStore('websocket', {
   state: () => ({
@@ -8,6 +8,7 @@ export const useWebSocketStore = defineStore('websocket', {
   }),
   actions: {
     connectWebSocket() {
+      const apiDataStore = useApiData()
       this.channel = realtime
         .channel('orders-channel')
         .on(
@@ -15,6 +16,8 @@ export const useWebSocketStore = defineStore('websocket', {
           { event: 'UPDATE', schema: 'public', table: 'orders' },
           async (payload) => {
             console.log('UPDATE', payload)
+            // Call updateOrCreateOrder with the payload data
+            apiDataStore.updateOrCreateOrder(payload.new)
           }
         )
         .subscribe()

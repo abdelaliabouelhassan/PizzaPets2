@@ -36,9 +36,9 @@ watch(
         </div>
 
         <h2 class="uppercase text-4xl mt-14 mb-8 text-white ml-4">Feed your pets</h2>
-        <ChildrenInscriptions class="px-4" />
+        <ChildrenInscriptions />
 
-        <InscriptionSummary class="px-4 mt-24" />
+        <InscriptionSummary />
       </div>
     </div>
   </main>
