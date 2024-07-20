@@ -1,6 +1,6 @@
-import realtime from '@/utils/realtime'
+import { realtime } from '@/utils/supabase'
 import { defineStore } from 'pinia'
-import { useApiData } from './apidata'
+import { useOrderStore } from './order'
 
 export const useWebSocketStore = defineStore('websocket', {
   state: () => ({
@@ -8,16 +8,15 @@ export const useWebSocketStore = defineStore('websocket', {
   }),
   actions: {
     connectWebSocket() {
-      const apiDataStore = useApiData()
+      const orderStore = useOrderStore()
       this.channel = realtime
         .channel('orders-channel')
         .on(
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'orders' },
           async (payload) => {
-            console.log('UPDATE', payload)
-            // Call updateOrCreateOrder with the payload data
-            apiDataStore.updateOrCreateOrder(payload.new)
+            console.log('ORDER UPDATE', payload)
+            orderStore.updateOrCreateOrder(payload.new)
           }
         )
         .subscribe()

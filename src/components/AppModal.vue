@@ -1,7 +1,7 @@
 <script setup>
+import { defineProps } from 'vue'
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { useModalStore } from '@/stores/modal.js'
-import { defineProps } from 'vue'
 
 const props = defineProps({
   modalId: {

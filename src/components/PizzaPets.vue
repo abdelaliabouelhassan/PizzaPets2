@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useApiData } from '@/stores/apidata'
 
@@ -14,28 +14,14 @@ const getPets = computed(() => apiData.getPets)
 
 watch(
   ordinalAddress,
+  // eslint-disable-next-line no-unused-vars
   (newAddress, oldAddress) => {
-    if (newAddress !== oldAddress) {
-      if (newAddress) {
-        apiData.fetchPets(newAddress)
-      } else {
-        apiData.$patch({
-          pets: [],
-          parents: [],
-          files: [],
-          orders: []
-        })
-      }
+    if (newAddress) {
+      apiData.fetchPets(newAddress)
     }
   },
   { immediate: true }
 )
-
-onMounted(() => {
-  if (ordinalAddress.value) {
-    apiData.fetchPets(ordinalAddress.value)
-  }
-})
 
 const paginatedPets = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value

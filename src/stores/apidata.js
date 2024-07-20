@@ -7,7 +7,6 @@ export const useApiData = defineStore('apiData', {
     files: [],
     parents: [],
     pets: [],
-    orders: [],
     options: [
       { label: 'Pizza' },
       { label: 'Shower' },
@@ -27,7 +26,6 @@ export const useApiData = defineStore('apiData', {
     getFiles: (state) => state.files,
     getParents: (state) => state.parents,
     getPets: (state) => state.pets,
-    getOrders: (state) => state.orders,
     getOptions: (state) => state.options
   },
   actions: {
@@ -58,14 +56,6 @@ export const useApiData = defineStore('apiData', {
         this.files = this.files.filter((file) => file !== option)
       } else {
         this.files.push(option)
-      }
-    },
-    updateOrCreateOrder(order) {
-      const index = this.orders.findIndex((o) => o.order_id === order.order_id)
-      if (index !== -1) {
-        this.orders[index] = order
-      } else {
-        this.orders.push(order)
       }
     }
   }
