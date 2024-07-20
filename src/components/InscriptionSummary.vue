@@ -1,6 +1,7 @@
 <script setup>
 import { supabase } from '@/utils/supabase'
 import { useAuthStore } from '@/stores/auth'
+import { Ordinalsbot } from 'ordinalsbot'
 import { useApiData } from '@/stores/apidata'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
@@ -53,7 +54,8 @@ const sendInscription = async (parents) => {
         webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`
       }
 
-      const inscription = this.inscription.Inscription()
+      const ordinalsbotObj = new Ordinalsbot('', import.meta.env.VITE_NETWORK)
+      const inscription = ordinalsbotObj.Inscription()
       const response = await inscription.createDirectOrder(requestPayload)
 
       await supabase
