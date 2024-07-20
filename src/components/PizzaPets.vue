@@ -1,57 +1,37 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth.js'
 import { useApiData } from '@/stores/apidata'
 
 // State and reactive variables
-const pets = ref([])
 const currentPage = ref(1)
 const itemsPerPage = ref(8)
 const authStore = useAuthStore()
 const apiData = useApiData()
 
-// Fetch pets from the API
-const fetchPets = async () => {
-  try {
-    const response = await axios.get(
-      `${window.location.origin}/.netlify/functions/owned-inscriptions?address=tb1pk5uh44r9hk9z33ygpkrqcnupaw28q07xvg9eu7utv4wv3d3q58pqj859wl`
-    )
-    pets.value = response.data
-  } catch (error) {
-    console.error('Error fetching pets:', error)
-  }
-}
+// Computed property for ordinal address
+const ordinalAddress = computed(() => authStore.getOrdinalAddress)
 
-// Toggle pet selection
-const toggleSelection = (pet) => {
-  const index = apiData.parents.findIndex((p) => p.inscriptionId === pet.inscriptionId)
-  if (index !== -1) {
-    apiData.parents = apiData.parents.filter((f) => f.inscriptionId !== pet.inscriptionId)
-  } else {
-    apiData.parents.push(pet)
-  }
-}
-
-// Watch for changes in wallet address
+// Watch for changes in ordinal address
 watch(
-  () => authStore.paymentAddress,
+  ordinalAddress,
   (newAddress, oldAddress) => {
     if (newAddress !== oldAddress) {
       if (newAddress) {
-        fetchPets()
+        apiData.fetchPets(newAddress)
       } else {
-        pets.value = []
+        apiData.pets = []
         apiData.parents = []
       }
     }
-  }
+  },
+  { immediate: true }
 )
 
-// Fetch pets on component mount if wallet address is available
+// Fetch pets on component mount if ordinal address is available
 onMounted(() => {
-  if (authStore.paymentAddress) {
-    fetchPets()
+  if (ordinalAddress.value) {
+    apiData.fetchPets(ordinalAddress.value)
   }
 })
 
@@ -59,10 +39,10 @@ onMounted(() => {
 const paginatedPets = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  return pets.value.slice(start, end)
+  return apiData.pets.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(pets.value.length / itemsPerPage.value))
+const totalPages = computed(() => Math.ceil(apiData.pets.length / itemsPerPage.value))
 
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
@@ -78,9 +58,9 @@ const goToPage = (page) => {
         <div
           class="h-full duration-200 bg-gray-100 cursor-pointer group focus-within:ring-2 focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 hover:scale-105"
           :class="{
-            'ring-4 ring-balck': apiData.parents.some((p) => p.inscriptionId === pet.inscriptionId)
+            'ring-4 ring-black': apiData.parents.some((p) => p.inscriptionId === pet.inscriptionId)
           }"
-          @click="toggleSelection(pet)"
+          @click="apiData.toggleSelection(pet)"
         >
           <img
             v-if="pet.contentType.startsWith('image/')"
@@ -115,7 +95,7 @@ const goToPage = (page) => {
       </div>
     </div>
     <!-- Pagination Controls -->
-    <div v-if="authStore.walletAddress" class="flex justify-center mt-12">
+    <div v-if="authStore.isLoggedIn" class="flex justify-center mt-12">
       <button
         :class="currentPage > 1 ? 'visible' : 'invisible'"
         class="px-4 py-2 mx-1 bg-black text-white w-[100px]"

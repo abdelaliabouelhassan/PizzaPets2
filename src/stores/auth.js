@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
-import { toast } from 'vue3-toastify'
-import 'vue3-toastify/dist/index.css'
+import { showToast } from '../utils/toast'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -13,7 +12,13 @@ export const useAuthStore = defineStore('auth', {
   }),
   getters: {
     isLoggedIn() {
-      return this.paymentAddress !== ''
+      return (
+        this.walletType !== '' &&
+        this.paymentAddress !== '' &&
+        this.paymentAddressPublicKey !== '' &&
+        this.ordinalAddress !== '' &&
+        this.ordinalAddressPublicKey !== ''
+      )
     },
     getWalletType() {
       return this.walletType
@@ -48,7 +53,7 @@ export const useAuthStore = defineStore('auth', {
         }
       } catch (err) {
         console.log(err)
-        this.showToast(`Install ${walletType} Wallet`, 'error')
+        showToast(`Install ${walletType} Wallet`, 'error')
       }
     },
     async connectUnisatWallet(walletType) {
@@ -57,13 +62,13 @@ export const useAuthStore = defineStore('auth', {
       const addresses = await unisat.requestAccounts()
       const publicKey = await unisat.getPublicKey()
 
-      this.updateLocalStorage(walletType, addresses[0], publicKey)
+      this.updateLocalStorage(walletType, addresses[0], addresses[0], publicKey, publicKey)
       this.updateState(walletType, addresses[0], addresses[0], publicKey, publicKey)
     },
     async connectMagicEdenWallet(walletType) {
       const magicEden = window.magicEden?.bitcoin
       if (!magicEden) {
-        this.showToast('MagicEden wallet not found', 'error')
+        showToast('MagicEden wallet not found', 'error')
         return
       }
 
@@ -95,7 +100,7 @@ export const useAuthStore = defineStore('auth', {
           network: { type: networkType }
         },
         onFinish: (response) => this.handleAddressResponse(walletType, response),
-        onCancel: () => this.showToast('Request canceled', 'error')
+        onCancel: () => showToast('Request canceled', 'error')
       }
 
       if (walletType === 'MagicEden') {
@@ -116,8 +121,8 @@ export const useAuthStore = defineStore('auth', {
       this.updateLocalStorage(
         walletType,
         paymentAddress,
-        paymentAddressPublicKey,
         ordinalAddress,
+        paymentAddressPublicKey,
         ordinalAddressPublicKey
       )
       this.updateState(
@@ -129,16 +134,18 @@ export const useAuthStore = defineStore('auth', {
       )
     },
     getAddressByPurpose(addresses, purpose) {
-      return addresses.find((addr) => addr.purpose === purpose).address
+      const addressObj = addresses.find((addr) => addr.purpose === purpose)
+      return addressObj ? addressObj.address : ''
     },
     getPublicKeyByPurpose(addresses, purpose) {
-      return addresses.find((addr) => addr.purpose === purpose).publicKey
+      const addressObj = addresses.find((addr) => addr.purpose === purpose)
+      return addressObj ? addressObj.publicKey : ''
     },
     updateLocalStorage(
       walletType,
       paymentAddress,
-      paymentAddressPublicKey,
       ordinalAddress,
+      paymentAddressPublicKey,
       ordinalAddressPublicKey
     ) {
       localStorage.setItem('walletType', walletType)
@@ -173,13 +180,6 @@ export const useAuthStore = defineStore('auth', {
       this.ordinalAddress = ''
       this.paymentAddressPublicKey = ''
       this.ordinalAddressPublicKey = ''
-    },
-    showToast(message, type) {
-      toast[type](message, {
-        theme: 'colored',
-        autoClose: 3000,
-        position: 'bottom-right'
-      })
     }
   }
 })

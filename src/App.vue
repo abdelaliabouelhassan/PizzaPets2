@@ -3,7 +3,7 @@ import AppHeader from './components/AppHeader.vue'
 import PizzaPets from './components/PizzaPets.vue'
 import ChildrenInscriptions from './components/ChildrenInscriptions.vue'
 import InscriptionSummary from './components/InscriptionSummary.vue'
-import { computed, watch, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import { useAuthStore } from './stores/auth'
 import { useWebSocketStore } from './stores/websocket'
 
@@ -12,19 +12,17 @@ const webSocketStore = useWebSocketStore()
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 
-watch(isLoggedIn, (newVal) => {
-  if (newVal) {
-    webSocketStore.connectWebSocket()
-  } else {
-    webSocketStore.disconnectWebSocket()
-  }
-})
-
-onMounted(() => {
-  if (isLoggedIn.value) {
-    webSocketStore.connectWebSocket()
-  }
-})
+watch(
+  isLoggedIn,
+  (newVal) => {
+    if (newVal) {
+      webSocketStore.connectWebSocket()
+    } else {
+      webSocketStore.disconnectWebSocket()
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
