@@ -18,6 +18,7 @@
     "@heroicons/vue": "^2.1.5",
     "@supabase/supabase-js": "^2.44.4",
     "axios": "^1.7.2",
+    "bitcoinjs-lib": "^6.1.6",
     "buffer": "^5.7.1",
     "ordinalsbot": "^0.2.11",
     "pinia": "^2.1.7",

@@ -27,7 +27,6 @@ export const useOrderStore = defineStore('order', {
   actions: {
     async createParentChildPsbt(orderId) {
       const fee = await getMempoolFeeSummary()
-
       const order = this.findOrderById(orderId)
 
       const payload = {
@@ -45,7 +44,7 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const response = await inscription.createParentChildPsbt(payload)
-        console.log('Response:', response)
+        console.log('createParentChildPsbt ', response)
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
         showToast('Failed to create Parent Child PSBT', 'error')

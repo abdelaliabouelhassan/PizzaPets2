@@ -37,6 +37,8 @@ const goToPage = (page) => {
     currentPage.value = page
   }
 }
+
+const isFirstButtonVisible = computed(() => currentPage.value > 1)
 </script>
 
 <template>
@@ -83,7 +85,8 @@ const goToPage = (page) => {
     <!-- Pagination Controls -->
     <div v-if="authStore.isLoggedIn" class="flex justify-center mt-12">
       <AppButton
-        v-show="currentPage > 1"
+        :class="isFirstButtonVisible ? 'visible' : 'invisible'"
+        v-if="currentPage > 1"
         @click="goToPage(currentPage - 1)"
         :label="'Previous'"
         :customClass="'px-4 py-2 mx-1 bg-black text-white w-[100px]'"
