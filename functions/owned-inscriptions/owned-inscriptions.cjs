@@ -4,8 +4,8 @@ const axios = require('axios')
 const handler = async (event) => {
   const address = event.queryStringParameters.address
 
-  const token = '39cdda6d-f149-4122-9c00-b98726c8d95b'
-
+  const API_KEY = '80be57d923c7870c139250d1fca2dc979702d153fa208fe1e8c53c3ee74b94b8'
+  const network = "testnet"
   if (!address) {
     return {
       statusCode: 400,
@@ -15,27 +15,28 @@ const handler = async (event) => {
 
   try {
     let pets = []
-    let page = 1
+    let cursor = 0
+    let size = 30
     let hasMoreData = true
 
     while (hasMoreData) {
       const response = await axios.get(
-        `https://api.ordiscan.com/v1/address/${address}/inscriptions`,
+        `https://open-api${network == "testnet" ? "-testnet" : ""}.unisat.io/v1/indexer/address/${address}/inscription-data`,
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${API_KEY}`
           },
           params: {
-            page: page
+            cursor: cursor,
+            size: size
           }
         }
       )
       const data = response.data
-      if (data && data.data && data.data.length > 0) {
-        pets = pets.concat(data)
-        page++
-      } else {
-        hasMoreData = false
+      hasMoreData = response.data.data.totalConfirmed > cursor + size
+      if (data && data.data && data.data.inscription.length > 0) {
+        pets = pets.concat(data.data.inscription)
+        cursor += size
       }
     }
 
@@ -45,6 +46,7 @@ const handler = async (event) => {
       body: JSON.stringify(pets)
     }
   } catch (error) {
+    console.log(error)
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.toString() })
