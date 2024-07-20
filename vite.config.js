@@ -32,8 +32,8 @@ export default defineConfig({
         })
       ]
     },
-    sourcemap: true,
-    minify: false
+    sourcemap: false,
+    minify: true
   },
   optimizeDeps: {
     esbuildOptions: {

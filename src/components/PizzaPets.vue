@@ -82,23 +82,19 @@ const isFirstButtonVisible = computed(() => currentPage.value > 1)
         </div>
       </div>
     </div>
-    <!-- Pagination Controls -->
     <div v-if="authStore.isLoggedIn" class="flex justify-center mt-12">
       <AppButton
-        :class="isFirstButtonVisible ? 'visible' : 'invisible'"
-        v-if="currentPage > 1"
         @click="goToPage(currentPage - 1)"
         :label="'Previous'"
-        :customClass="'px-4 py-2 mx-1 bg-black text-white w-[100px]'"
+        :customClass="`${isFirstButtonVisible ? 'visible' : 'invisible'} px-4 py-2 mx-1 bg-black text-white w-[100px]`"
       />
       <span v-if="totalPages > 1" class="px-4 py-2 mx-1 text-white">
         {{ currentPage }} / {{ totalPages }}
       </span>
       <AppButton
-        v-if="currentPage < totalPages"
         @click="goToPage(currentPage + 1)"
         :label="'Next'"
-        :customClass="'px-4 py-2 mx-1 bg-black text-white w-[100px]'"
+        :customClass="`${currentPage < totalPages ? 'visible' : 'invisible'} px-4 py-2 mx-1 bg-black text-white w-[100px]`"
       />
     </div>
   </div>
