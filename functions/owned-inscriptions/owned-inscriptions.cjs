@@ -1,11 +1,22 @@
 /* eslint-disable no-undef */
 const axios = require('axios')
 
+const API_KEYS = ['2ad650a7a2dfeb22f287de85adcf9d72fe50fe68c7b61301273717559b652d72']
+
+let currentApiKeyIndex = 0
+
+const getNextApiKey = () => {
+  const apiKey = API_KEYS[currentApiKeyIndex]
+  currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length
+  return apiKey
+}
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
 const handler = async (event) => {
   const address = event.queryStringParameters.address
-
-  const API_KEY = '80be57d923c7870c139250d1fca2dc979702d153fa208fe1e8c53c3ee74b94b8'
   const network = 'testnet'
+
   if (!address) {
     return {
       statusCode: 400,
@@ -21,10 +32,10 @@ const handler = async (event) => {
 
     while (hasMoreData) {
       const response = await axios.get(
-        `https://open-api${network == 'testnet' ? '-testnet' : ''}.unisat.io/v1/indexer/address/${address}/inscription-data`,
+        `https://open-api${network === 'testnet' ? '-testnet' : ''}.unisat.io/v1/indexer/address/${address}/inscription-data`,
         {
           headers: {
-            Authorization: `Bearer ${API_KEY}`
+            Authorization: `Bearer ${getNextApiKey()}`
           },
           params: {
             cursor: cursor,
@@ -38,8 +49,9 @@ const handler = async (event) => {
         pets = pets.concat(data.data.inscription)
         cursor += size
       }
+      await delay(250) // Add a delay of 250ms (4 requests per second - limit is 5)
     }
-    //TODO: Need to filter and return only the pets that are alive
+    // TODO: Need to filter and return only the pets that are alive
     return {
       statusCode: 200,
       body: JSON.stringify(pets)

@@ -65,8 +65,8 @@ export const useOrderStore = defineStore('order', {
       }
     },
     async signPsbtByWalletType(walletType, parentChildPsbt) {
-      const unisat = window.unisat
       if (walletType === 'unisat') {
+        const unisat = window.unisat
         return await unisat.signPsbt(parentChildPsbt.psbtBase64)
       } else {
         console.log('sign psbt', walletType)
@@ -109,7 +109,7 @@ export const useOrderStore = defineStore('order', {
 
       if (this.fetching) return
       this.fetching = true
-      if (apiData.getParents?.length === 0) {
+      if (apiData.selectedParents.length === 0) {
         showToast('Please select parents', 'error')
         this.fetching = false
         return
