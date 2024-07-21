@@ -11,23 +11,23 @@ export const useOrderStore = defineStore('order', {
   state: () => ({
     currentOrderId: '',
     fetching: false,
-    orders: []
+    order: null,
+    txId: null
   }),
   getters: {
-    getCurrentOrderId() {
-      return this.currentOrderId
-    },
-    getOrders() {
-      return this.orders
-    },
-    isFetching() {
-      return this.fetching
-    }
+    getCurrentOrderId: (state) => state.currentOrderId,
+    getOrder: (state) => state.order,
+    isFetching: (state) => state.fetching,
+    getTxId: (state) => state.txId
   },
   actions: {
+    async handleOrderUpdate(newOrder) {
+      this.setOrder(newOrder)
+      const parentChildPsbt = await this.createParentChildPsbt(newOrder)
+      await this.signPsbt(newOrder, parentChildPsbt)
+    },
     async createParentChildPsbt(order) {
       const fee = await getMempoolFeeSummary()
-
       const payload = {
         orderId: order.order_id,
         paymentAddress: order.payment_address,
@@ -40,9 +40,7 @@ export const useOrderStore = defineStore('order', {
       const inscription = ordinalsbot.Inscription()
 
       try {
-        const response = await inscription.createParentChildPsbt(payload)
-
-        return response
+        return await inscription.createParentChildPsbt(payload)
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
         showToast('Failed to create Parent Child PSBT', 'error')
@@ -57,34 +55,37 @@ export const useOrderStore = defineStore('order', {
       console.log('wallet type:', walletType)
 
       try {
-        if (walletType === 'unisat') {
-          const unisat = window.unisat
-
-          const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64)
-
-          console.log('Signed PSBT:', signedPsbt)
-
-          const tx = await unisat.pushPsbt(signedPsbt)
-
-          console.log('tx:', tx)
-        } else if (walletType === 'magiceden') {
-          console.log('sign psbt', walletType)
-        } else if (walletType === 'xverse') {
-          console.log('sign psbt', walletType)
-        } else {
-          showToast(`Wallet type not supported: ${walletType}`, 'error')
+        const signedPsbt = await this.signPsbtByWalletType(walletType, parentChildPsbt)
+        if (signedPsbt) {
+          const tx = await this.pushSignedPsbt(walletType, signedPsbt)
+          this.txId = tx
         }
       } catch (error) {
         console.error('Failed to sign PSBT:', error)
         showToast('Failed to sign PSBT', 'error')
       }
     },
+    async signPsbtByWalletType(walletType, parentChildPsbt) {
+      const unisat = window.unisat
+      if (walletType === 'unisat') {
+        return await unisat.signPsbt(parentChildPsbt.psbtBase64)
+      } else {
+        console.log('sign psbt', walletType)
+        return null
+      }
+    },
+    async pushSignedPsbt(walletType, signedPsbt) {
+      if (walletType === 'unisat') {
+        const unisat = window.unisat
+        return await unisat.pushPsbt(signedPsbt)
+      }
+    },
     createChildrenFilesPayload(files) {
-      return files.map((data) => ({
-        name: `${data}.txt`,
+      return files.map((file) => ({
+        name: `${file.label}.txt`,
         type: 'plain/text',
-        size: new TextEncoder().encode(data).length,
-        dataURL: `data:plain/text;base64,${btoa(data)}`
+        size: new TextEncoder().encode(file.label).length,
+        dataURL: `data:plain/text;base64,${btoa(file.label)}`
       }))
     },
     async insertOrderToSupabase(response) {
@@ -114,7 +115,8 @@ export const useOrderStore = defineStore('order', {
         this.fetching = false
         return
       }
-      if (apiData.getFiles?.length === 0) {
+
+      if (apiData.getFiles.filter((data) => data.selected).length === 0) {
         showToast('Please select at least 1 option', 'error')
         this.fetching = false
         return
@@ -126,34 +128,38 @@ export const useOrderStore = defineStore('order', {
       }
 
       try {
-        const files = this.createChildrenFilesPayload(apiData.getFiles)
+        const inscribeChildren = apiData.getFiles.filter((data) => data.selected)
+        const files = this.createChildrenFilesPayload(inscribeChildren)
         const fee = await getMempoolFeeSummary()
-
-        const requestPayload = {
+        const requestPayload = this.createRequestPayload(
           files,
           parents,
-          receiveAddress: authStore.getOrdinalAddress,
-          lowPostage: true,
-          fee: fee,
-          webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`
-        }
-
+          fee,
+          authStore.getOrdinalAddress
+        )
         const ordinalsbot = getOrdinalsbotInstance()
         const inscription = ordinalsbot.Inscription()
         const response = await inscription.createDirectOrder(requestPayload)
 
         await this.insertOrderToSupabase(response)
-
         this.currentOrderId = response.id
-
         modalStore.openModal('order-summary')
         this.fetching = false
         return true
       } catch (error) {
         this.fetching = false
-
         console.error('Something went wrong:', error)
         showToast('Something went wrong', 'error')
+      }
+    },
+    createRequestPayload(files, parents, fee, receiveAddress) {
+      return {
+        files,
+        parents,
+        receiveAddress,
+        lowPostage: true,
+        fee,
+        webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`
       }
     },
     async handleDirectOrderButtonClick() {
@@ -167,13 +173,14 @@ export const useOrderStore = defineStore('order', {
         }))
       await this.sendInscription(parents)
     },
-    updateOrCreateOrder(order) {
-      const index = this.orders.findIndex((o) => o.order_id === order.order_id)
-      if (index !== -1) {
-        this.orders[index] = order
-      } else {
-        this.orders.push(order)
-      }
+    resetState() {
+      this.order = null
+      this.currentOrderId = ''
+      this.fetching = false
+      this.txId = null
+    },
+    setOrder(order) {
+      this.order = order
     },
     toggleParentSelectionFromOrder(parent) {
       const apiData = useApiData()
@@ -182,14 +189,6 @@ export const useOrderStore = defineStore('order', {
     toggleChildrenSelectionFromOrder(option) {
       const apiData = useApiData()
       apiData.toggleChildrenSelection(option)
-    },
-    findOrderById(orderId) {
-      return this.orders.find((order) => order.order_id === orderId)
-    },
-    resetState() {
-      this.orders = []
-      this.currentOrderId = ''
-      this.fetching = false
     }
   }
 })

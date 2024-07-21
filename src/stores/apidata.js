@@ -4,27 +4,26 @@ import { defineStore } from 'pinia'
 
 export const useApiData = defineStore('apiData', {
   state: () => ({
-    files: [],
-    parents: [],
-    options: [
-      { label: 'Pizza' },
-      { label: 'Shower' },
-      { label: 'Milk' },
-      { label: 'Coffee' },
-      { label: 'Steroids' },
-      { label: 'Weed' },
-      { label: 'Cocaine' },
-      { label: 'LSD' },
-      { label: 'Beer' },
-      { label: 'DMT' },
-      { label: 'Ketamine' },
-      { label: 'Molly' }
-    ]
+    files: [
+      { label: 'Pizza', selected: false },
+      { label: 'Shower', selected: false },
+      { label: 'Milk', selected: false },
+      { label: 'Coffee', selected: false },
+      { label: 'Steroids', selected: false },
+      { label: 'Weed', selected: false },
+      { label: 'Cocaine', selected: false },
+      { label: 'LSD', selected: false },
+      { label: 'Beer', selected: false },
+      { label: 'DMT', selected: false },
+      { label: 'Ketamine', selected: false },
+      { label: 'Molly', selected: false }
+    ],
+    parents: []
   }),
   getters: {
     getFiles: (state) => state.files,
     getParents: (state) => state.parents,
-    getOptions: (state) => state.options,
+    selectedFiles: (state) => state.files.filter((file) => file.selected),
     selectedParents: (state) => state.parents.filter((parent) => parent.selected)
   },
   actions: {
@@ -46,15 +45,13 @@ export const useApiData = defineStore('apiData', {
       }
     },
     toggleChildrenSelection(option) {
-      const index = this.files.indexOf(option)
-      if (index !== -1) {
-        this.files = this.files.filter((file) => file !== option)
-      } else {
-        this.files.push(option)
+      const foundOption = this.files.find((file) => file.label === option.label)
+      if (foundOption) {
+        foundOption.selected = !foundOption.selected
       }
     },
     resetState() {
-      this.files = []
+      this.files = this.files.map((file) => ({ ...file, selected: false }))
       this.parents = []
     }
   }

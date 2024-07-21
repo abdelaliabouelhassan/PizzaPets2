@@ -15,10 +15,7 @@ export const useWebSocketStore = defineStore('websocket', {
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'orders' },
           async (payload) => {
-            console.log('ORDER UPDATE', payload)
-            await orderStore.updateOrCreateOrder(payload.new)
-            const parentChildPsbt = await orderStore.createParentChildPsbt(payload.new)
-            await orderStore.signPsbt(payload.new, parentChildPsbt)
+            orderStore.handleOrderUpdate(payload.new)
           }
         )
         .subscribe()
