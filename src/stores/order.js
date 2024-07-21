@@ -26,7 +26,7 @@ export const useOrderStore = defineStore('order', {
   },
   actions: {
     async createParentChildPsbt(order) {
-      let fee = await getMempoolFeeSummary()
+      const fee = await getMempoolFeeSummary()
 
       const payload = {
         orderId: order.order_id,
