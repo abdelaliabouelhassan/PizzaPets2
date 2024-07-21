@@ -36,6 +36,7 @@ export const useOrderStore = defineStore('order', {
           orderId: order.order_id,
           paymentAddress: order.payment_address,
           paymentPublicKey: order.payment_address_public_key,
+          ordinalsAddress: order.ordinal_address,
           ordinalPublicKey: order.ordinal_address_public_key,
           feeRate: fee
         }
