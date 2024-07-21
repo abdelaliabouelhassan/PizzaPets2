@@ -1,5 +1,6 @@
 import { realtime } from '@/utils/supabase'
 import { defineStore } from 'pinia'
+import { useAuthStore } from './auth'
 import { useOrderStore } from './order'
 
 export const useWebSocketStore = defineStore('websocket', {
@@ -9,11 +10,17 @@ export const useWebSocketStore = defineStore('websocket', {
   actions: {
     connectWebSocket() {
       const orderStore = useOrderStore()
+      const authStore = useAuthStore()
       this.channel = realtime
         .channel('orders-channel')
         .on(
           'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'orders' },
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'orders',
+            filter: `ordinal_address=eq.${authStore.getOrdinalAddress}`
+          },
           async (payload) => {
             orderStore.handleOrderUpdate(payload.new)
           }

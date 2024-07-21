@@ -49,12 +49,13 @@ export const useOrderStore = defineStore('order', {
       const authStore = useAuthStore()
       const walletType = authStore.getWalletType.toLowerCase()
 
-      console.log('order:', order)
-      console.log('parentChildPsbt:', parentChildPsbt)
-      console.log('wallet type:', walletType)
-
       try {
+        console.log('order', order)
+        console.log('parentChildPsbt', parentChildPsbt)
+        console.log('walletType', walletType)
         const signedPsbt = await this.signPsbtByWalletType(walletType, parentChildPsbt)
+        console.log('signedPsbt:', signedPsbt)
+
         if (signedPsbt) {
           const tx = await this.pushSignedPsbt(walletType, signedPsbt)
           this.txId = tx
@@ -67,7 +68,9 @@ export const useOrderStore = defineStore('order', {
     async signPsbtByWalletType(walletType, parentChildPsbt) {
       if (walletType === 'unisat') {
         const unisat = window.unisat
-        return await unisat.signPsbt(parentChildPsbt.psbtBase64)
+        return await unisat.signPsbt(parentChildPsbt.psbtBase64, {
+          autoFinalized: true
+        })
       } else {
         console.log('sign psbt', walletType)
         return null

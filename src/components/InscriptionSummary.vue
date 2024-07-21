@@ -40,8 +40,9 @@ watch(
   </div>
 
   <AppModal modalId="order-summary">
-    <h1>CURRENT ORDER ID: {{ orderStore.getCurrentOrderId }}</h1>
-    <h1>ORDER STATUS: {{ orderStore.getOrder.order_status }}</h1>
-    <h1>TX: {{ orderStore.getTxId }}</h1>
+    <h1>ORDER ID: {{ orderStore.getCurrentOrderId }}</h1>
+    <h1 v-if="orderStore.getOrder">ORDER STATUS: {{ orderStore.getOrder.order_status }}</h1>
+    <h1 v-if="orderStore.getTxId">TX: {{ orderStore.getTxId }}</h1>
+    <h1 v-if="orderStore.getOrder">ORDER DATA: {{ orderStore.getOrder }}</h1>
   </AppModal>
 </template>
