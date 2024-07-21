@@ -45,6 +45,11 @@ export const useOrderStore = defineStore('order', {
       try {
         const response = await inscription.createParentChildPsbt(payload)
         console.log('createParentChildPsbt ', response)
+
+        // const unisat = window.unisat
+        // await unisat.signPsbt(response.psbtHex, {
+        //   toSignInputs: [{ index: 0, publicKey: order.payment_address_public_key }]
+        // })
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
         showToast('Failed to create Parent Child PSBT', 'error')
