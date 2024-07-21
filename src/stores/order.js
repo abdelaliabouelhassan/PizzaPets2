@@ -151,9 +151,9 @@ export const useOrderStore = defineStore('order', {
         this.orders.push(order)
       }
     },
-    toggleParentSelectionFromOrder(pet) {
+    toggleParentSelectionFromOrder(parent) {
       const apiData = useApiData()
-      apiData.toggleParentSelection(pet)
+      apiData.toggleParentSelection(parent)
     },
     toggleChildrenSelectionFromOrder(option) {
       const apiData = useApiData()
@@ -161,6 +161,11 @@ export const useOrderStore = defineStore('order', {
     },
     findOrderById(orderId) {
       return this.orders.find((order) => order.order_id === orderId)
+    },
+    resetState() {
+      this.orders = []
+      this.currentOrderId = ''
+      this.fetching = false
     }
   }
 })

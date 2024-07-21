@@ -26,20 +26,12 @@ watch(
 </script>
 
 <template>
-  <main class="md:absolute h-full w-full top-0 left-0">
-    <div class="max-w-[1170px] mx-auto mt-12 px-4 pb-24">
-      <AppHeader />
-      <div>
-        <h1 class="uppercase text-4xl mt-16 mb-8 text-white ml-4">My pets</h1>
-        <div class="w-full flex flex-col overflow-y-auto hide-scrollbar">
-          <PizzaPets />
-        </div>
-
-        <h2 class="uppercase text-4xl mt-14 mb-8 text-white ml-4">Feed your pets</h2>
-        <ChildrenInscriptions />
-
-        <InscriptionSummary />
-      </div>
-    </div>
-  </main>
+  <div class="max-w-[1170px] mx-auto mt-12 px-4 mb-24">
+    <AppHeader />
+    <h1 class="uppercase text-4xl mt-16 mb-8 text-white ml-4">My pets</h1>
+    <PizzaPets />
+    <h2 class="uppercase text-4xl mt-14 mb-8 text-white ml-4">Feed your pets</h2>
+    <ChildrenInscriptions />
+    <InscriptionSummary />
+  </div>
 </template>

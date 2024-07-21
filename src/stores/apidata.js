@@ -31,7 +31,6 @@ export const useApiData = defineStore('apiData', {
     async fetchParents(address) {
       try {
         const { data } = await axios.get(
-          // `${window.location.origin}/.netlify/functions/owned-inscriptions?address=tb1pk5uh44r9hk9z33ygpkrqcnupaw28q07xvg9eu7utv4wv3d3q58pqj859wl`
           `${window.location.origin}/.netlify/functions/owned-inscriptions?address=${address}`
         )
         this.parents = data.map((parent) => ({ ...parent, selected: false }))
@@ -40,10 +39,10 @@ export const useApiData = defineStore('apiData', {
         showToast('Error fetching pets', 'error')
       }
     },
-    toggleParentSelection(pet) {
-      const parent = this.parents.find((p) => p.inscriptionId === pet.inscriptionId)
-      if (parent) {
-        parent.selected = !parent.selected
+    toggleParentSelection(parent) {
+      const foundParent = this.parents.find((p) => p.inscriptionId === parent.inscriptionId)
+      if (foundParent) {
+        foundParent.selected = !foundParent.selected
       }
     },
     toggleChildrenSelection(option) {
@@ -53,6 +52,10 @@ export const useApiData = defineStore('apiData', {
       } else {
         this.files.push(option)
       }
+    },
+    resetState() {
+      this.files = []
+      this.parents = []
     }
   }
 })

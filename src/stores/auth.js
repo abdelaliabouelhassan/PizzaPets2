@@ -1,6 +1,8 @@
+import { useApiData } from '@/stores/apidata'
 import { defineStore } from 'pinia'
 import { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
 import { showToast } from '../utils/toast'
+import { useOrderStore } from './order'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -38,6 +40,12 @@ export const useAuthStore = defineStore('auth', {
   },
   actions: {
     signOut() {
+      const apiData = useApiData()
+      apiData.resetState()
+
+      const orderStore = useOrderStore()
+      orderStore.resetState()
+
       this.clearLocalStorage()
       this.resetState()
     },
@@ -101,10 +109,6 @@ export const useAuthStore = defineStore('auth', {
         },
         onFinish: (response) => this.handleAddressResponse(walletType, response),
         onCancel: () => showToast('Request canceled', 'error')
-      }
-
-      if (walletType === 'MagicEden') {
-        options.getProvider = async () => window.magicEden?.bitcoin
       }
 
       return options
