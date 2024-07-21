@@ -26,7 +26,7 @@ export const useOrderStore = defineStore('order', {
   },
   actions: {
     async createParentChildPsbt(order) {
-      const fee = await getMempoolFeeSummary()
+      let fee = await getMempoolFeeSummary()
 
       const payload = {
         orderId: order.order_id,
@@ -48,11 +48,36 @@ export const useOrderStore = defineStore('order', {
         showToast('Failed to create Parent Child PSBT', 'error')
       }
     },
-    signPsbt(order, parentChildPsbt) {
+    async signPsbt(order, parentChildPsbt) {
       const authStore = useAuthStore()
-      console.log('wallet Type', authStore.getWalletType)
       console.log('order:', order)
       console.log('parentChildPsbt:', parentChildPsbt)
+
+      const walletType = authStore.getWalletType.toLowerCase()
+      console.log('wallet type:', walletType)
+
+      try {
+        if (walletType === 'unisat') {
+          const unisat = window.unisat
+          const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64)
+
+          console.log('Signed PSBT:', signedPsbt)
+
+          // Error: mempool min fee not met, 2360 < 4224
+          const tx = await unisat.pushPsbt(signedPsbt)
+
+          console.log('tx:', tx)
+        } else if (walletType === 'magiceden') {
+          console.log('sign psbt', walletType)
+        } else if (walletType === 'xverse') {
+          console.log('sign psbt', walletType)
+        } else {
+          console.log('Wallet type not supported:', walletType)
+        }
+      } catch (error) {
+        console.error('Failed to sign PSBT:', error)
+        showToast('Failed to sign PSBT', 'error')
+      }
     },
     createChildrenFilesPayload(files) {
       return files.map((data) => ({
