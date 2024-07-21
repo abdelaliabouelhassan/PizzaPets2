@@ -15,7 +15,9 @@ import { showToast } from '@/utils/toast'
  */
 export const getMempoolFeeSummary = async (feeType = 'halfHourFee') => {
   try {
-    const data = await fetch('https://mempool.space/api/v1/fees/recommended')
+    const data = await fetch(
+      `https://${import.meta.env.VITE_NETWORK === 'testnet' ? 'testnet.' : ''}mempool.space/api/v1/fees/recommended`
+    )
     const jsonData = await data.json()
     if (jsonData[feeType] !== undefined) {
       return jsonData[feeType]

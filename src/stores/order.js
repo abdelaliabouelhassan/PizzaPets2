@@ -50,15 +50,16 @@ export const useOrderStore = defineStore('order', {
     },
     async signPsbt(order, parentChildPsbt) {
       const authStore = useAuthStore()
+      const walletType = authStore.getWalletType.toLowerCase()
+
       console.log('order:', order)
       console.log('parentChildPsbt:', parentChildPsbt)
-
-      const walletType = authStore.getWalletType.toLowerCase()
       console.log('wallet type:', walletType)
 
       try {
         if (walletType === 'unisat') {
           const unisat = window.unisat
+
           const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64)
 
           console.log('Signed PSBT:', signedPsbt)
@@ -72,7 +73,7 @@ export const useOrderStore = defineStore('order', {
         } else if (walletType === 'xverse') {
           console.log('sign psbt', walletType)
         } else {
-          console.log('Wallet type not supported:', walletType)
+          showToast(`Wallet type not supported: ${walletType}`, 'error')
         }
       } catch (error) {
         console.error('Failed to sign PSBT:', error)
