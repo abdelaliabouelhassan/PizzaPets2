@@ -33,7 +33,7 @@ export const useOrderStore = defineStore('order', {
         paymentAddress: order.payment_address,
         paymentPublicKey: order.payment_address_public_key,
         ordinalPublicKey: order.ordinal_address_public_key,
-        feeRate: fee * 1.5
+        feeRate: fee
       }
 
       const ordinalsbot = getOrdinalsbotInstance()
