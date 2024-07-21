@@ -6,10 +6,7 @@ import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
-import {
-  Wallet,
-  RpcErrorCode,
-} from "sats-connect"
+import Wallet from 'sats-connect'
 import * as btc from 'micro-btc-signer'
 
 export const useOrderStore = defineStore('order', {
@@ -93,11 +90,7 @@ export const useOrderStore = defineStore('order', {
             console.log(response)
             return response
           } else {
-            if (response.error.code === RpcErrorCode.USER_REJECTION) {
-              showToast('user rejected to sign', 'error')
-            } else {
-              // handle error 
-            }
+            showToast('user rejected to sign', 'error')
           }
         } catch (err) {
           console.log(err);
