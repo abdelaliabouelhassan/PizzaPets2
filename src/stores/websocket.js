@@ -17,7 +17,8 @@ export const useWebSocketStore = defineStore('websocket', {
           async (payload) => {
             console.log('ORDER UPDATE', payload)
             await orderStore.updateOrCreateOrder(payload.new)
-            await orderStore.createParentChildPsbt(payload.new.order_id)
+            const parentChildPsbt = await orderStore.createParentChildPsbt(payload.new)
+            await orderStore.signPsbt(payload.new, parentChildPsbt)
           }
         )
         .subscribe()

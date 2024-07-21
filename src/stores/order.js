@@ -25,9 +25,8 @@ export const useOrderStore = defineStore('order', {
     }
   },
   actions: {
-    async createParentChildPsbt(orderId) {
+    async createParentChildPsbt(order) {
       const fee = await getMempoolFeeSummary()
-      const order = this.findOrderById(orderId)
 
       const payload = {
         orderId: order.order_id,
@@ -37,30 +36,23 @@ export const useOrderStore = defineStore('order', {
         feeRate: fee
       }
 
-      console.log('createParentChildPsbt payload:', payload)
-
       const ordinalsbot = getOrdinalsbotInstance()
       const inscription = ordinalsbot.Inscription()
 
       try {
         const response = await inscription.createParentChildPsbt(payload)
-        console.log('createParentChildPsbt ', response)
 
-        const unisat = window.unisat
-        const signedPSBTHex = await unisat.signPsbt(response.psbtHex, {
-          autoFinalized: false,
-          toSignInputs: [
-            { index: 0, publicKey: order.payment_address_public_key }
-            // { index: 0, publicKey: order.payment_address_public_key, disableTweakSigner: true }
-          ]
-        })
-
-        const tx = await unisat.pushPsbt(signedPSBTHex)
-        console.log('tx', tx)
+        return response
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
         showToast('Failed to create Parent Child PSBT', 'error')
       }
+    },
+    signPsbt(order, parentChildPsbt) {
+      const authStore = useAuthStore()
+      console.log('wallet Type', authStore.getWalletType)
+      console.log('order:', order)
+      console.log('parentChildPsbt:', parentChildPsbt)
     },
     createChildrenFilesPayload(files) {
       return files.map((data) => ({
