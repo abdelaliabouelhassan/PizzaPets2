@@ -48,9 +48,13 @@ export const useOrderStore = defineStore('order', {
 
         const unisat = window.unisat
         const signedPSBTHex = await unisat.signPsbt(response.psbtHex, {
-          autoFinalized: true,
-          toSignInputs: [{ index: 0, publicKey: order.payment_address_public_key }]
+          autoFinalized: false,
+          toSignInputs: [
+            { index: 0, publicKey: order.payment_address_public_key }
+            // { index: 0, publicKey: order.payment_address_public_key, disableTweakSigner: true }
+          ]
         })
+
         const tx = await unisat.pushPsbt(signedPSBTHex)
         console.log('tx', tx)
       } catch (error) {
