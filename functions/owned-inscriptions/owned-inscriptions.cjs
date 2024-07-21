@@ -5,7 +5,7 @@ const handler = async (event) => {
   const address = event.queryStringParameters.address
 
   const API_KEY = '80be57d923c7870c139250d1fca2dc979702d153fa208fe1e8c53c3ee74b94b8'
-  const network = "testnet"
+  const network = 'testnet'
   if (!address) {
     return {
       statusCode: 400,
@@ -21,7 +21,7 @@ const handler = async (event) => {
 
     while (hasMoreData) {
       const response = await axios.get(
-        `https://open-api${network == "testnet" ? "-testnet" : ""}.unisat.io/v1/indexer/address/${address}/inscription-data`,
+        `https://open-api${network == 'testnet' ? '-testnet' : ''}.unisat.io/v1/indexer/address/${address}/inscription-data`,
         {
           headers: {
             Authorization: `Bearer ${API_KEY}`
@@ -39,7 +39,6 @@ const handler = async (event) => {
         cursor += size
       }
     }
-
     //TODO: Need to filter and return only the pets that are alive
     return {
       statusCode: 200,

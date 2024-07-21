@@ -33,7 +33,7 @@ export const useOrderStore = defineStore('order', {
         paymentAddress: order.payment_address,
         paymentPublicKey: order.payment_address_public_key,
         ordinalPublicKey: order.ordinal_address_public_key,
-        feeRate: fee
+        feeRate: fee * 1.5
       }
 
       const ordinalsbot = getOrdinalsbotInstance()
@@ -64,7 +64,6 @@ export const useOrderStore = defineStore('order', {
 
           console.log('Signed PSBT:', signedPsbt)
 
-          // Error: mempool min fee not met, 2360 < 4224
           const tx = await unisat.pushPsbt(signedPsbt)
 
           console.log('tx:', tx)
