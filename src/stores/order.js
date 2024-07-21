@@ -46,10 +46,10 @@ export const useOrderStore = defineStore('order', {
         const response = await inscription.createParentChildPsbt(payload)
         console.log('createParentChildPsbt ', response)
 
-        // const unisat = window.unisat
-        // await unisat.signPsbt(response.psbtHex, {
-        //   toSignInputs: [{ index: 0, publicKey: order.payment_address_public_key }]
-        // })
+        const unisat = window.unisat
+        await unisat.signPsbt(response.psbtHex, {
+          toSignInputs: [{ index: 0, publicKey: order.payment_address_public_key }]
+        })
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
         showToast('Failed to create Parent Child PSBT', 'error')
@@ -57,10 +57,10 @@ export const useOrderStore = defineStore('order', {
     },
     createChildrenFilesPayload(files) {
       return files.map((data) => ({
-        name: `${data.label}.txt`,
+        name: `${data}.txt`,
         type: 'plain/text',
-        size: new TextEncoder().encode(data.label).length,
-        dataURL: `data:plain/text;base64,${btoa(data.label)}`
+        size: new TextEncoder().encode(data).length,
+        dataURL: `data:plain/text;base64,${btoa(data)}`
       }))
     },
     async insertOrderToSupabase(response) {
@@ -134,11 +134,13 @@ export const useOrderStore = defineStore('order', {
     },
     async handleDirectOrderButtonClick() {
       const apiData = useApiData()
-      const parents = apiData.getParents?.map((data) => ({
-        inscriptionId: data.inscriptionId,
-        returnAddress: data.address,
-        value: data.outSatoshi
-      }))
+      const parents = apiData.getParents
+        // .filter((data) => data.selected)
+        .map((data) => ({
+          inscriptionId: data.inscriptionId,
+          returnAddress: data.address,
+          value: data.outSatoshi
+        }))
       await this.sendInscription(parents)
     },
     updateOrCreateOrder(order) {

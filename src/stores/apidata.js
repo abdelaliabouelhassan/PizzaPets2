@@ -28,12 +28,11 @@ export const useApiData = defineStore('apiData', {
     selectedParents: (state) => state.parents.filter((parent) => parent.selected)
   },
   actions: {
-    // eslint-disable-next-line no-unused-vars
     async fetchParents(address) {
       try {
         const { data } = await axios.get(
-          `${window.location.origin}/.netlify/functions/owned-inscriptions?address=tb1pk5uh44r9hk9z33ygpkrqcnupaw28q07xvg9eu7utv4wv3d3q58pqj859wl`
-          // `${window.location.origin}/.netlify/functions/owned-inscriptions?address=${address}`
+          // `${window.location.origin}/.netlify/functions/owned-inscriptions?address=tb1pk5uh44r9hk9z33ygpkrqcnupaw28q07xvg9eu7utv4wv3d3q58pqj859wl`
+          `${window.location.origin}/.netlify/functions/owned-inscriptions?address=${address}`
         )
         this.parents = data.map((parent) => ({ ...parent, selected: false }))
       } catch (error) {
