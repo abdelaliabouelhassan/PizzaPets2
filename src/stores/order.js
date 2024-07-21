@@ -138,7 +138,7 @@ export const useOrderStore = defineStore('order', {
     async handleDirectOrderButtonClick() {
       const apiData = useApiData()
       const parents = apiData.getParents
-        // .filter((data) => data.selected)
+        .filter((data) => data.selected)
         .map((data) => ({
           inscriptionId: data.inscriptionId,
           returnAddress: data.address,
