@@ -10,7 +10,7 @@ const toggleChildrenSelection = (label) => {
 }
 
 const getIconPath = (label) => {
-  const imgUrl = `./icons/${label}.png`
+  const imgUrl = `./images/${label}.png`
   return imgUrl
 }
 </script>

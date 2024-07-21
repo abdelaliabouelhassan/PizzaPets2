@@ -33,7 +33,7 @@ export const useApiData = defineStore('apiData', {
         const { data } = await axios.get(
           `${window.location.origin}/.netlify/functions/owned-inscriptions?address=${address}`
         )
-        this.parents = data.map((parent) => ({ ...parent, selected: true }))
+        this.parents = data.map((parent) => ({ ...parent, selected: false }))
       } catch (error) {
         console.error('Error fetching pets:', error)
         showToast('Error fetching pets', 'error')
