@@ -23,6 +23,7 @@
     "micro-btc-signer": "^0.4.2",
     "ordinalsbot": "^0.2.11",
     "pinia": "^2.1.7",
+    "sats-connect": "^2.5.0",
     "vite-plugin-node-polyfills": "^0.22.0",
     "vue": "^3.4.29",
     "vue3-toastify": "^0.2.2"
