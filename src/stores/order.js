@@ -112,8 +112,8 @@ export const useOrderStore = defineStore('order', {
 
       if (this.fetching) return
       this.fetching = true
-      if (apiData.selectedParents.length === 0) {
-        showToast('Please select parents', 'error')
+      if (parents.length === 0) {
+        showToast('Please select at least 1 parent', 'error')
         this.fetching = false
         return
       }
@@ -130,8 +130,8 @@ export const useOrderStore = defineStore('order', {
       }
 
       try {
-        const inscribeChildren = apiData.selectedFiles
-        const files = this.createChildrenFilesPayload(inscribeChildren)
+        const selectedFiles = apiData.selectedFiles
+        const files = this.createChildrenFilesPayload(selectedFiles)
         const fee = await getMempoolFeeSummary()
         const requestPayload = this.createRequestPayload(
           files,

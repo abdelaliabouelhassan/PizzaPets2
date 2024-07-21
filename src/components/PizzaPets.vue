@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useApiData } from '@/stores/apidata'
 import { useOrderStore } from '@/stores/order'
@@ -11,18 +11,7 @@ const authStore = useAuthStore()
 const apiData = useApiData()
 const orderStore = useOrderStore()
 
-const ordinalAddress = computed(() => authStore.getOrdinalAddress)
 const getParents = computed(() => apiData.getParents)
-
-watch(
-  ordinalAddress,
-  (newAddress) => {
-    if (newAddress) {
-      apiData.fetchParents(newAddress)
-    }
-  },
-  { immediate: true }
-)
 
 const paginatedParents = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value

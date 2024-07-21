@@ -5,20 +5,25 @@ import ChildrenInscriptions from './components/ChildrenInscriptions.vue'
 import InscriptionSummary from './components/InscriptionSummary.vue'
 import { computed, watch } from 'vue'
 import { useAuthStore } from './stores/auth'
-import { useWebSocketStore } from './stores/websocket'
+import { useApiData } from './stores/apidata'
+import { useWebSocket } from './composables/useWebSocket'
 
 const authStore = useAuthStore()
-const webSocketStore = useWebSocketStore()
+const apiData = useApiData()
+
+const { connectWebSocket, disconnectWebSocket } = useWebSocket()
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
+const ordinalAddress = computed(() => authStore.getOrdinalAddress)
 
 watch(
   isLoggedIn,
   (newVal) => {
     if (newVal) {
-      webSocketStore.connectWebSocket()
+      apiData.fetchParents(ordinalAddress.value)
+      connectWebSocket()
     } else {
-      webSocketStore.disconnectWebSocket()
+      disconnectWebSocket()
     }
   },
   { immediate: true }
