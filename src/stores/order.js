@@ -6,6 +6,11 @@ import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
+import {
+  Wallet,
+  RpcErrorCode,
+} from "sats-connect"
+import * as btc from 'micro-btc-signer'
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
@@ -67,12 +72,38 @@ export const useOrderStore = defineStore('order', {
       }
     },
     async signPsbtByWalletType(walletType, parentChildPsbt) {
+      const authStore = useAuthStore()
       if (walletType === 'unisat') {
         const unisat = window.unisat
         return await unisat.signPsbt(parentChildPsbt.psbtBase64, {
           autoFinalized: true
         })
-      } else {
+      } else if (walletType === 'xverse') {
+        try {
+          const response = await Wallet.request('signPsbt', {
+            psbt: parentChildPsbt.psbtBase64,
+            allowedSignHash: btc.SigHash.ALL,
+            signInputs: {
+              [authStore.getPaymentAddress]: parentChildPsbt.paymentInputIndices,
+              [authStore.getOrdinalAddress]: parentChildPsbt.ordinalInputIndices,
+            },
+            broadcast: true,
+          });
+          if (response.status === "success") {
+            console.log(response)
+            return response
+          } else {
+            if (response.error.code === RpcErrorCode.USER_REJECTION) {
+              showToast('user rejected to sign', 'error')
+            } else {
+              // handle error 
+            }
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      }
+      else {
         console.log('sign psbt', walletType)
         return null
       }

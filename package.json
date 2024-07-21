@@ -20,6 +20,7 @@
     "axios": "^1.7.2",
     "bitcoinjs-lib": "^6.1.6",
     "buffer": "^5.7.1",
+    "micro-btc-signer": "^0.4.2",
     "ordinalsbot": "^0.2.11",
     "pinia": "^2.1.7",
     "vite-plugin-node-polyfills": "^0.22.0",

@@ -24,7 +24,7 @@ export const useApiData = defineStore('apiData', {
     getFiles: (state) => state.files,
     getParents: (state) => state.parents,
     selectedFiles: (state) => state.files.filter((file) => file.selected),
-    selectedParents: (state) => state.parents.filter((parent) => parent.selected)
+    selectedParents: (state) => state.parents
   },
   actions: {
     async fetchParents(address) {
