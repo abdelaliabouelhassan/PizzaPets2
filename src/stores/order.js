@@ -27,19 +27,18 @@ export const useOrderStore = defineStore('order', {
       await this.signPsbt(newOrder, parentChildPsbt)
     },
     async createParentChildPsbt(order) {
-      const fee = await getMempoolFeeSummary()
-      const payload = {
-        orderId: order.order_id,
-        paymentAddress: order.payment_address,
-        paymentPublicKey: order.payment_address_public_key,
-        ordinalPublicKey: order.ordinal_address_public_key,
-        feeRate: fee
-      }
-
       const ordinalsbot = getOrdinalsbotInstance()
       const inscription = ordinalsbot.Inscription()
+      const fee = await getMempoolFeeSummary()
 
       try {
+        const payload = {
+          orderId: order.order_id,
+          paymentAddress: order.payment_address,
+          paymentPublicKey: order.payment_address_public_key,
+          ordinalPublicKey: order.ordinal_address_public_key,
+          feeRate: fee
+        }
         return await inscription.createParentChildPsbt(payload)
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
@@ -116,7 +115,7 @@ export const useOrderStore = defineStore('order', {
         return
       }
 
-      if (apiData.getFiles.filter((data) => data.selected).length === 0) {
+      if (apiData.selectedFiles.length === 0) {
         showToast('Please select at least 1 option', 'error')
         this.fetching = false
         return
@@ -128,7 +127,7 @@ export const useOrderStore = defineStore('order', {
       }
 
       try {
-        const inscribeChildren = apiData.getFiles.filter((data) => data.selected)
+        const inscribeChildren = apiData.selectedFiles
         const files = this.createChildrenFilesPayload(inscribeChildren)
         const fee = await getMempoolFeeSummary()
         const requestPayload = this.createRequestPayload(
@@ -164,13 +163,11 @@ export const useOrderStore = defineStore('order', {
     },
     async handleDirectOrderButtonClick() {
       const apiData = useApiData()
-      const parents = apiData.getParents
-        .filter((data) => data.selected)
-        .map((data) => ({
-          inscriptionId: data.inscriptionId,
-          returnAddress: data.address,
-          value: data.outSatoshi
-        }))
+      const parents = apiData.selectedParents.map((data) => ({
+        inscriptionId: data.inscriptionId,
+        returnAddress: data.address,
+        value: data.outSatoshi
+      }))
       await this.sendInscription(parents)
     },
     resetState() {
