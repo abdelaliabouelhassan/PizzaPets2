@@ -6,8 +6,12 @@ import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
-import Wallet, { RpcErrorCode, BitcoinNetworkType, signTransaction, getProviders } from 'sats-connect'
-
+import Wallet, {
+  RpcErrorCode,
+  BitcoinNetworkType,
+  signTransaction,
+  getProviders
+} from 'sats-connect'
 
 import axios from 'axios'
 
@@ -45,14 +49,14 @@ export const useOrderStore = defineStore('order', {
           userOrdinalsAddress: order.ordinal_address,
           feeRate: fee
         }
-        if (walletType == "xverse") {
+        if (walletType == 'xverse') {
           return await inscription.createParentChildPsbt(payload)
         } else {
           const response = await axios.post(
-            "https://api.ordinalsbot.com/create-parent-child-psbt",
+            'https://api.ordinalsbot.com/create-parent-child-psbt',
             payload
           )
-          return response
+          return response.data
         }
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
@@ -83,7 +87,7 @@ export const useOrderStore = defineStore('order', {
       const authStore = useAuthStore()
       if (walletType === 'unisat') {
         const unisat = window.unisat
-        return await unisat.signPsbt(parentChildPsbt.data.psbtBase64, {
+        return await unisat.signPsbt(parentChildPsbt.psbtBase64, {
           autoFinalized: true
         })
       } else if (walletType === 'xverse') {
@@ -111,7 +115,6 @@ export const useOrderStore = defineStore('order', {
         }
       } else if (walletType === 'magiceden') {
         try {
-
           const networkType =
             import.meta.env.VITE_NETWORK === 'testnet'
               ? BitcoinNetworkType.Testnet
@@ -120,26 +123,26 @@ export const useOrderStore = defineStore('order', {
             provider: getProviders(),
             payload: {
               network: networkType,
-              psbtBase64: parentChildPsbt.data.psbtBase64,
+              psbtBase64: parentChildPsbt.psbtBase64,
               broadcast: true,
               inputsToSign: [
                 {
                   address: authStore.getPaymentAddress,
-                  signingIndexes: parentChildPsbt.data.paymentInputIndices
-                },
-              ],
+                  signingIndexes: parentChildPsbt.paymentInputIndices
+                }
+              ]
             },
             onFinish: (response) => {
-              console.log('Bulk tx signing response:', response);
+              console.log('Bulk tx signing response:', response)
               return response
             },
             onCancel: () => {
-              alert('Request canceled');
-            },
+              alert('Request canceled')
+            }
           })
           console.log(data)
         } catch (err) {
-          console.error(err);
+          console.error(err)
         }
       }
     },
@@ -147,8 +150,8 @@ export const useOrderStore = defineStore('order', {
       if (walletType === 'unisat') {
         const unisat = window.unisat
         return await unisat.pushPsbt(signedPsbt)
-      } else if (walletType === "xverse") {
-        const txid = signedPsbt.result.txid;
+      } else if (walletType === 'xverse') {
+        const txid = signedPsbt.result.txid
         return txid
       }
     },
