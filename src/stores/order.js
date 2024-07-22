@@ -6,7 +6,8 @@ import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
-import Wallet, { RpcErrorCode } from 'sats-connect'
+import Wallet, { RpcErrorCode, BitcoinNetworkType, signTransaction, getProviders } from 'sats-connect'
+
 
 import axios from 'axios'
 
@@ -82,7 +83,7 @@ export const useOrderStore = defineStore('order', {
       const authStore = useAuthStore()
       if (walletType === 'unisat') {
         const unisat = window.unisat
-        return await unisat.signPsbt(parentChildPsbt.psbtBase64, {
+        return await unisat.signPsbt(parentChildPsbt.data.psbtBase64, {
           autoFinalized: true
         })
       } else if (walletType === 'xverse') {
@@ -95,7 +96,6 @@ export const useOrderStore = defineStore('order', {
             },
             broadcast: true
           })
-          console.log({ response })
           if (response.status === 'success') {
             return response
           } else {
@@ -109,15 +109,47 @@ export const useOrderStore = defineStore('order', {
         } catch (err) {
           console.log(err)
         }
-      } else {
-        console.log('sign psbt', walletType)
-        return null
+      } else if (walletType === 'magiceden') {
+        try {
+
+          const networkType =
+            import.meta.env.VITE_NETWORK === 'testnet'
+              ? BitcoinNetworkType.Testnet
+              : BitcoinNetworkType.Mainnet
+          const data = await signTransaction({
+            provider: getProviders(),
+            payload: {
+              network: networkType,
+              psbtBase64: parentChildPsbt.data.psbtBase64,
+              broadcast: true,
+              inputsToSign: [
+                {
+                  address: authStore.getPaymentAddress,
+                  signingIndexes: parentChildPsbt.data.paymentInputIndices
+                },
+              ],
+            },
+            onFinish: (response) => {
+              console.log('Bulk tx signing response:', response);
+              return response
+            },
+            onCancel: () => {
+              alert('Request canceled');
+            },
+          })
+          console.log(data)
+        } catch (err) {
+          console.error(err);
+        }
       }
     },
     async pushSignedPsbt(walletType, signedPsbt) {
       if (walletType === 'unisat') {
         const unisat = window.unisat
         return await unisat.pushPsbt(signedPsbt)
+      } else if (walletType === "xverse") {
+        const txid = signedPsbt.result.txid;
+        return txid
       }
     },
     createChildrenDelegatesPayload(delegates) {

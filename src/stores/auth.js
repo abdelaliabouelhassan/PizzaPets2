@@ -77,13 +77,13 @@ export const useAuthStore = defineStore('auth', {
             this.handleAddressResponse(walletType, res.result)
             showToast(`Success ${walletType} Wallet Connect`, 'success')
           } else {
-            showToast(`install ${walletType} Wallet`, 'error')
+            showToast(`install ${walletType} Wallet2`, 'error')
           }
         }
 
       } catch (err) {
         console.log('connectWallet: ', err)
-        showToast(`Install ${walletType} Wallet`, 'error')
+        showToast(`Install ${walletType} Wallet3`, 'error')
       }
     },
     async connectUnisatWallet(walletType) {
@@ -97,17 +97,16 @@ export const useAuthStore = defineStore('auth', {
       showToast(`Success ${walletType} Wallet Connect`, 'success')
     },
     async connectMagicEdenWallet(walletType) {
-      const magicEden = window.magicEden?.bitcoin
+      const magicEden = window.magicEden?.bitcoin;
       if (!magicEden) {
-        showToast(`install ${walletType} wallet`, 'error')
-        return
+        showToast(`Install ${walletType} wallet`, 'error');
+        return;
       }
 
-      const getAddressOptions = this.getAddressOptions(walletType)
-      getAddressOptions.getProvider = async () => magicEden
+      const getAddressOptions = this.getAddressOptions(walletType);
+      getAddressOptions.getProvider = async () => magicEden;
 
-      const response = await getAddress(getAddressOptions)
-      this.handleAddressResponse(walletType, response.addresses)
+      await getAddress(getAddressOptions);
       showToast(`Success ${walletType} Wallet Connect`, 'success')
     },
     async ensureCorrectNetwork(unisat) {
