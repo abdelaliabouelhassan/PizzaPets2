@@ -9,7 +9,6 @@ import { defineStore } from 'pinia'
 import Wallet, { RpcErrorCode } from 'sats-connect'
 
 import * as btc from 'micro-btc-signer'
-
 export const useOrderStore = defineStore('order', {
   state: () => ({
     currentOrderId: '',
@@ -86,6 +85,7 @@ export const useOrderStore = defineStore('order', {
             },
             broadcast: true
           })
+          console.log({ response })
           if (response.status === 'success') {
             return response
           } else {
