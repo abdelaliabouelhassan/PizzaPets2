@@ -8,8 +8,6 @@ import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
 import Wallet, { RpcErrorCode } from 'sats-connect'
 
-import * as btc from 'micro-btc-signer'
-
 export const useOrderStore = defineStore('order', {
   state: () => ({
     currentOrderId: '',
@@ -79,7 +77,6 @@ export const useOrderStore = defineStore('order', {
         try {
           const response = await Wallet.request('signPsbt', {
             psbt: parentChildPsbt.psbtBase64,
-            allowedSignHash: btc.SignatureHash.ALL,
             signInputs: {
               [authStore.getPaymentAddress]: parentChildPsbt.paymentInputIndices,
               [authStore.getOrdinalAddress]: parentChildPsbt.ordinalInputIndices
