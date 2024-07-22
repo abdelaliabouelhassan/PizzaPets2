@@ -56,12 +56,11 @@ export const useAuthStore = defineStore('auth', {
         } else if (walletType === 'MagicEden') {
           await this.connectMagicEdenWallet(walletType)
         } else {
-
+          // TODO: This is making another modal appear for the login we need to change this behavior
           const res = await Wallet.request('getAccounts', {
-            purposes: [AddressPurpose.Payment, AddressPurpose.Ordinals, AddressPurpose.Stacks],
-          });
+            purposes: [AddressPurpose.Payment, AddressPurpose.Ordinals]
+          })
           this.handleAddressResponse(walletType, res.result)
-
         }
       } catch (err) {
         console.log(err)

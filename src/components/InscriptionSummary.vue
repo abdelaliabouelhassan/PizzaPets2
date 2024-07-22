@@ -14,11 +14,9 @@ const totalParents = ref(0)
 
 watch(
   selectedParents,
-  (newVal, oldVal) => {
+  (newVal) => {
     if (newVal) {
       totalParents.value = newVal.length
-    } else {
-      totalParents.value = oldVal.length
     }
   },
   { immediate: true }
@@ -26,7 +24,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex items-center justify-end gap-x-12 px-4 mt-24">
+  <div class="mt-24 flex items-center justify-end gap-x-12 px-4">
     <h5 class="text-2xl font-semibold">
       You are going to feed
       {{ totalParents }} {{ totalParents > 1 ? 'pets' : 'pet' }}

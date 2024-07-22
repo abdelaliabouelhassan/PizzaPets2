@@ -158,6 +158,7 @@ export const useOrderStore = defineStore('order', {
       try {
         const selectedDelegates = apiData.selectedDelegates
         const delegates = this.createChildrenDelegatesPayload(selectedDelegates)
+
         const fee = await getMempoolFeeSummary()
         const requestPayload = this.createRequestPayload(
           delegates,
@@ -188,7 +189,7 @@ export const useOrderStore = defineStore('order', {
         lowPostage: true,
         fee,
         webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`,
-        inscriptionIdPrefix: 'pizza-pets'
+        inscriptionIdPrefix: '00'
       }
     },
     async handleDirectOrderButtonClick() {
