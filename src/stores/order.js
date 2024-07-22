@@ -44,11 +44,11 @@ export const useOrderStore = defineStore('order', {
           userOrdinalsAddress: order.ordinal_address,
           feeRate: fee
         }
-        if (walletType == 'xverse') {
+        if (walletType == "xverse") {
           return await inscription.createParentChildPsbt(payload)
         } else {
           const response = await axios.post(
-            'https://api.ordinalsbot.com/create-parent-child-psbt',
+            "https://api.ordinalsbot.com/create-parent-child-psbt",
             payload
           )
           return response
