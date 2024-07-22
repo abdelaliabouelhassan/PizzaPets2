@@ -74,6 +74,9 @@ const isFirstButtonVisible = computed(() => currentPage.value > 1)
             :title="`html ${i + 1}`"
             class="object-cover w-full h-full group-hover:opacity-75"
           ></iframe>
+          <div v-else  :title="`text ${i + 1}`" class="object-cover w-full h-full group-hover:opacity-75">
+            {{ parent.textContent }}
+          </div>
         </div>
       </div>
     </div>

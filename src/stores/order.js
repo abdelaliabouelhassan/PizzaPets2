@@ -49,7 +49,7 @@ export const useOrderStore = defineStore('order', {
           userOrdinalsAddress: order.ordinal_address,
           feeRate: fee
         }
-        if (walletType == 'xverse') {
+        if (walletType === 'xverse') {
           return await inscription.createParentChildPsbt(payload)
         } else {
           const response = await axios.post(
@@ -72,13 +72,9 @@ export const useOrderStore = defineStore('order', {
         console.log('order', order)
         console.log('parentChildPsbt', parentChildPsbt)
         console.log('walletType', walletType)
-        const signedPsbt = await this.signPsbtByWalletType(walletType, parentChildPsbt)
-        console.log('signedPsbt:', signedPsbt)
-
-        if (signedPsbt) {
-          const tx = await this.pushSignedPsbt(walletType, signedPsbt)
-          this.txId = tx
-        }
+        const txId = await this.signPsbtByWalletType(walletType, parentChildPsbt)
+        console.log('signedPsbt:', txId)
+        this.txId = txId
       } catch (error) {
         apiData.delegates?.forEach((delegate) => (delegate.selected = false))
         apiData.parents?.forEach((delegate) => (delegate.selected = false))
@@ -93,9 +89,11 @@ export const useOrderStore = defineStore('order', {
       const apiData = useApiData()
       if (walletType === 'unisat') {
         const unisat = window.unisat
-        return await unisat.signPsbt(parentChildPsbt.psbtBase64, {
+        const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
           autoFinalized: true
         })
+        const tx = await unisat.pushPsbt(signedPsbt)
+        return tx
       } else if (walletType === 'xverse') {
         try {
           const response = await Wallet.request('signPsbt', {
@@ -107,7 +105,11 @@ export const useOrderStore = defineStore('order', {
             broadcast: true
           })
           if (response.status === 'success') {
-            return response
+            if (response) {
+              return response.result.txid
+            } else {
+              console.log('PSBT signed but transaction ID not returned');
+            }
           } else {
             if (response.error.code === RpcErrorCode.USER_REJECTION) {
               apiData.parents?.forEach((delegate) => (delegate.selected = false))
@@ -146,7 +148,10 @@ export const useOrderStore = defineStore('order', {
               return response
             },
             onCancel: () => {
-              alert('Request canceled')
+              apiData.delegates?.forEach((delegate) => (delegate.selected = false))
+              apiData.parents?.forEach((delegate) => (delegate.selected = false))
+              modalStore.closeModal('order-summary')
+              showToast('User rejected to sign', 'error')
             }
           })
           console.log(data)
@@ -155,14 +160,7 @@ export const useOrderStore = defineStore('order', {
         }
       }
     },
-    async pushSignedPsbt(walletType, signedPsbt) {
-      if (walletType === 'unisat') {
-        const unisat = window.unisat
-        return await unisat.pushPsbt(signedPsbt)
-      } else if (walletType === 'xverse') {
-        return "correct"
-      }
-    },
+
     createChildrenDelegatesPayload(delegates) {
       return delegates.map((file) => ({
         delegateId: file.inscriptionId,
