@@ -16,9 +16,9 @@ const getIconPath = (label) => {
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-4 mt-12 lg:grid-cols-6 px-4">
+  <div class="grid grid-cols-2 gap-4 px-4 mt-12 lg:grid-cols-6">
     <div
-      v-for="(option, index) in apiData.getFiles"
+      v-for="(option, index) in apiData.getDelegates"
       :key="index"
       @click="toggleChildrenSelection(option)"
       :class="option.selected ? 'border-white' : 'border-transparent'"

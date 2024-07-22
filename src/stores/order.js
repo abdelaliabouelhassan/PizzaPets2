@@ -35,7 +35,6 @@ export const useOrderStore = defineStore('order', {
       const ordinalsbot = getOrdinalsbotInstance()
       const inscription = ordinalsbot.Inscription()
       const fee = await getMempoolFeeSummary()
-      console.log({ order })
       try {
         // const payload = {
         //   orderId: order.order_id,
@@ -88,7 +87,6 @@ export const useOrderStore = defineStore('order', {
         })
       } else if (walletType === 'xverse') {
         try {
-          console.log(parentChildPsbt.psbtBase64)
           const response = await Wallet.request('signPsbt', {
             psbt: parentChildPsbt.psbtBase64,
             allowedSignHash: btc.SignatureHash.ALL,
@@ -99,13 +97,13 @@ export const useOrderStore = defineStore('order', {
             broadcast: true,
           });
           if (response.status === "success") {
-            console.log(response)
             return response
           } else {
             if (response.error.code === RpcErrorCode.USER_REJECTION) {
-              showToast('user rejected to sign', 'error')
+              showToast('User rejected to sign', 'error')
+              console.log(response.error)
             } else {
-              console.log(response.error.code)
+              console.log(response.error)
             }
           }
         } catch (err) {
@@ -123,11 +121,9 @@ export const useOrderStore = defineStore('order', {
         return await unisat.pushPsbt(signedPsbt)
       }
     },
-    createChildrenFilesPayload(files) {
-      return files.map((file) => ({
-        name: `${file.label}.txt`,
-        type: 'plain/text',
-        size: new TextEncoder().encode(file.label).length,
+    createChildrenDelegatesPayload(delegates) {
+      return delegates.map((file) => ({
+        delegateId: "7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0",
         dataURL: `data:plain/text;base64,${btoa(file.label)}`
       }))
     },
@@ -159,7 +155,7 @@ export const useOrderStore = defineStore('order', {
         return
       }
 
-      if (apiData.selectedFiles.length === 0) {
+      if (apiData.selectedDelegates.length === 0) {
         showToast('Please select at least 1 option', 'error')
         this.fetching = false
         return
@@ -171,11 +167,11 @@ export const useOrderStore = defineStore('order', {
       }
 
       try {
-        const selectedFiles = apiData.selectedFiles
-        const files = this.createChildrenFilesPayload(selectedFiles)
+        const selectedDelegates = apiData.selectedDelegates
+        const delegates = this.createChildrenDelegatesPayload(selectedDelegates)
         const fee = await getMempoolFeeSummary()
         const requestPayload = this.createRequestPayload(
-          files,
+          delegates,
           parents,
           fee,
           authStore.getOrdinalAddress
@@ -195,14 +191,15 @@ export const useOrderStore = defineStore('order', {
         showToast('Something went wrong', 'error')
       }
     },
-    createRequestPayload(files, parents, fee, receiveAddress) {
+    createRequestPayload(delegates, parents, fee, receiveAddress) {
       return {
-        files,
+        delegates,
         parents,
         receiveAddress,
         lowPostage: true,
         fee,
-        webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`
+        webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`,
+        inscriptionIdPrefix: "00"
       }
     },
     async handleDirectOrderButtonClick() {

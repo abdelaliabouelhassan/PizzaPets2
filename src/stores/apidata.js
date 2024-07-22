@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 
 export const useApiData = defineStore('apiData', {
   state: () => ({
-    files: [
+    delegates: [
       { label: 'Pizza', selected: false },
       { label: 'Shower', selected: false },
       { label: 'Milk', selected: false },
@@ -21,9 +21,9 @@ export const useApiData = defineStore('apiData', {
     parents: []
   }),
   getters: {
-    getFiles: (state) => state.files,
+    getDelegates: (state) => state.delegates,
     getParents: (state) => state.parents,
-    selectedFiles: (state) => state.files.filter((file) => file.selected),
+    selectedDelegates: (state) => state.delegates.filter((file) => file.selected),
     selectedParents: (state) => state.parents.filter((parent) => parent.selected)
   },
   actions: {
@@ -46,13 +46,13 @@ export const useApiData = defineStore('apiData', {
       }
     },
     toggleChildrenSelection(option) {
-      const foundOption = this.files.find((file) => file.label === option.label)
+      const foundOption = this.delegates.find((file) => file.label === option.label)
       if (foundOption) {
         foundOption.selected = !foundOption.selected
       }
     },
     resetState() {
-      this.files = this.files.map((file) => ({ ...file, selected: false }))
+      this.delegates = this.delegates.map((file) => ({ ...file, selected: false }))
       this.parents = []
     }
   }
