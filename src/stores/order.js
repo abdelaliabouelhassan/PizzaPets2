@@ -8,6 +8,8 @@ import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
 import Wallet, { RpcErrorCode } from 'sats-connect'
 
+import axios from 'axios'
+
 export const useOrderStore = defineStore('order', {
   state: () => ({
     currentOrderId: '',
@@ -28,6 +30,8 @@ export const useOrderStore = defineStore('order', {
       await this.signPsbt(newOrder, parentChildPsbt)
     },
     async createParentChildPsbt(order) {
+      const authStore = useAuthStore()
+      const walletType = authStore.getWalletType.toLowerCase()
       const ordinalsbot = getOrdinalsbotInstance()
       const inscription = ordinalsbot.Inscription()
       const fee = await getMempoolFeeSummary()
@@ -40,7 +44,16 @@ export const useOrderStore = defineStore('order', {
           userOrdinalsAddress: order.ordinal_address,
           feeRate: fee
         }
-        return await inscription.createParentChildPsbt(payload)
+        if (walletType == "xverse") {
+          return await inscription.createParentChildPsbt(payload)
+        } else {
+          const response = await axios.post(
+            "https://api.ordinalsbot.com/create-parent-child-psbt",
+            payload
+          )
+          return response
+        }
+
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
         showToast('Failed to create Parent Child PSBT', 'error')
