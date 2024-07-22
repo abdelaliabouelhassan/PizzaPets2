@@ -6,9 +6,7 @@ import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
-import Wallet, {
-  RpcErrorCode,
-} from "sats-connect"
+import Wallet, { RpcErrorCode } from 'sats-connect'
 
 import * as btc from 'micro-btc-signer'
 
@@ -36,21 +34,13 @@ export const useOrderStore = defineStore('order', {
       const inscription = ordinalsbot.Inscription()
       const fee = await getMempoolFeeSummary()
       try {
-        // const payload = {
-        //   orderId: order.order_id,
-        //   paymentAddress: order.payment_address,
-        //   paymentPublicKey: order.payment_address_public_key,
-        //   ordinalAddress: order.ordinal_address,
-        //   ordinalPublicKey: order.ordinal_address_public_key,
-        //   feeRate: fee
-        // }
         const payload = {
           orderId: order.order_id,
           userAddress: order.payment_address,
           userPublicKey: order.payment_address_public_key,
           userOrdinalPublicKey: order.ordinal_address_public_key,
           userOrdinalsAddress: order.ordinal_address,
-          feeRate: fee,
+          feeRate: fee
         }
         return await inscription.createParentChildPsbt(payload)
       } catch (error) {
@@ -92,11 +82,11 @@ export const useOrderStore = defineStore('order', {
             allowedSignHash: btc.SignatureHash.ALL,
             signInputs: {
               [authStore.getPaymentAddress]: parentChildPsbt.paymentInputIndices,
-              [authStore.getOrdinalAddress]: parentChildPsbt.ordinalInputIndices,
+              [authStore.getOrdinalAddress]: parentChildPsbt.ordinalInputIndices
             },
-            broadcast: true,
-          });
-          if (response.status === "success") {
+            broadcast: true
+          })
+          if (response.status === 'success') {
             return response
           } else {
             if (response.error.code === RpcErrorCode.USER_REJECTION) {
@@ -107,10 +97,9 @@ export const useOrderStore = defineStore('order', {
             }
           }
         } catch (err) {
-          console.log(err);
+          console.log(err)
         }
-      }
-      else {
+      } else {
         console.log('sign psbt', walletType)
         return null
       }
@@ -123,7 +112,7 @@ export const useOrderStore = defineStore('order', {
     },
     createChildrenDelegatesPayload(delegates) {
       return delegates.map((file) => ({
-        delegateId: "7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0",
+        delegateId: file.inscriptionId,
         dataURL: `data:plain/text;base64,${btoa(file.label)}`
       }))
     },
@@ -199,7 +188,7 @@ export const useOrderStore = defineStore('order', {
         lowPostage: true,
         fee,
         webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`,
-        inscriptionIdPrefix: "00"
+        inscriptionIdPrefix: 'pizza-pets'
       }
     },
     async handleDirectOrderButtonClick() {

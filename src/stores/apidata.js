@@ -5,18 +5,66 @@ import { defineStore } from 'pinia'
 export const useApiData = defineStore('apiData', {
   state: () => ({
     delegates: [
-      { label: 'Pizza', selected: false },
-      { label: 'Shower', selected: false },
-      { label: 'Milk', selected: false },
-      { label: 'Coffee', selected: false },
-      { label: 'Steroids', selected: false },
-      { label: 'Weed', selected: false },
-      { label: 'Cocaine', selected: false },
-      { label: 'LSD', selected: false },
-      { label: 'Beer', selected: false },
-      { label: 'DMT', selected: false },
-      { label: 'Ketamine', selected: false },
-      { label: 'Molly', selected: false }
+      {
+        label: 'Pizza',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Shower',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Milk',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Coffee',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Steroids',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Weed',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Cocaine',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'LSD',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Beer',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'DMT',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Ketamine',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      },
+      {
+        label: 'Molly',
+        inscriptionId: '7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0',
+        selected: false
+      }
     ],
     parents: []
   }),

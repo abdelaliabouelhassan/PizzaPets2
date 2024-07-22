@@ -20,11 +20,7 @@ export const getMempoolFeeSummary = async (feeType = 'halfHourFee') => {
     )
     const jsonData = await data.json()
     if (jsonData[feeType] !== undefined) {
-      console.log('=====================TESTNET FEE ESTIMATION ARE WRONG=====================')
-      console.log('type: ' + feeType)
-      console.log('fee: ' + jsonData[feeType])
-      console.log('Math.ceil(jsonData[feeType] * 2.5) ' + Math.ceil(jsonData[feeType] * 2.5))
-      return Math.ceil(jsonData[feeType] * 2.5)
+      return Math.ceil(jsonData[feeType])
     } else {
       showToast('Invalid fee type', 'error')
     }
