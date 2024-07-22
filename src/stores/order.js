@@ -83,6 +83,7 @@ export const useOrderStore = defineStore('order', {
             },
             broadcast: true
           })
+          console.log({ response })
           if (response.status === 'success') {
             return response
           } else {

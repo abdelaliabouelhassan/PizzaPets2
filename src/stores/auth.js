@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import Wallet, { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
 import { showToast } from '../utils/toast'
 import { useOrderStore } from './order'
+import { getProviders, setDefaultProvider } from '@sats-connect/core'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -45,7 +46,7 @@ export const useAuthStore = defineStore('auth', {
 
       const orderStore = useOrderStore()
       orderStore.resetState()
-
+      showToast('Success Wallet Disconnect', 'success')
       this.clearLocalStorage()
       this.resetState()
     },
@@ -56,16 +57,30 @@ export const useAuthStore = defineStore('auth', {
         } else if (walletType === 'MagicEden') {
           await this.connectMagicEdenWallet(walletType)
         } else {
-          const res = await Wallet.request('getAccounts', {
-            purposes: [AddressPurpose.Payment, AddressPurpose.Ordinals]
+          const data = getProviders();
+          let isXverse = false;
+          data.map((temp) => {
+            if (temp.id == "XverseProviders.BitcoinProvider") {
+              isXverse = true
+            }
           })
+          if (isXverse) {
+            setDefaultProvider("XverseProviders.BitcoinProvider")
+            const res = await Wallet.request('getAccounts', {
+              purposes: [AddressPurpose.Payment, AddressPurpose.Ordinals]
+            })
 
-          if (res.status === 'error') {
-            return showToast(res.error.message, 'error')
+            if (res.status === 'error') {
+              return showToast(res.error.message, 'error')
+            }
+
+            this.handleAddressResponse(walletType, res.result)
+            showToast(`Success ${walletType} Wallet Connect`, 'success')
+          } else {
+            showToast(`install ${walletType} Wallet`, 'error')
           }
-
-          this.handleAddressResponse(walletType, res.result)
         }
+
       } catch (err) {
         console.log('connectWallet: ', err)
         showToast(`Install ${walletType} Wallet`, 'error')
@@ -79,11 +94,12 @@ export const useAuthStore = defineStore('auth', {
 
       this.updateLocalStorage(walletType, addresses[0], addresses[0], publicKey, publicKey)
       this.updateState(walletType, addresses[0], addresses[0], publicKey, publicKey)
+      showToast(`Success ${walletType} Wallet Connect`, 'success')
     },
     async connectMagicEdenWallet(walletType) {
       const magicEden = window.magicEden?.bitcoin
       if (!magicEden) {
-        showToast('MagicEden wallet not found', 'error')
+        showToast(`install ${walletType} wallet`, 'error')
         return
       }
 
@@ -92,6 +108,7 @@ export const useAuthStore = defineStore('auth', {
 
       const response = await getAddress(getAddressOptions)
       this.handleAddressResponse(walletType, response.addresses)
+      showToast(`Success ${walletType} Wallet Connect`, 'success')
     },
     async ensureCorrectNetwork(unisat) {
       let network = await unisat.getNetwork()
@@ -114,8 +131,7 @@ export const useAuthStore = defineStore('auth', {
           message: 'Address for receiving Ordinals and payments',
           network: { type: networkType }
         },
-        onFinish: (response) => this.handleAddressResponse(walletType, response.addresses),
-        onCancel: () => showToast('Request canceled', 'error')
+        onFinish: (response) => this.handleAddressResponse(walletType, response.addresses)
       }
 
       return options
