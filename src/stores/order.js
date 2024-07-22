@@ -6,6 +6,11 @@ import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
+import Wallet, {
+  RpcErrorCode,
+} from "sats-connect"
+
+import * as btc from 'micro-btc-signer'
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
@@ -30,15 +35,22 @@ export const useOrderStore = defineStore('order', {
       const ordinalsbot = getOrdinalsbotInstance()
       const inscription = ordinalsbot.Inscription()
       const fee = await getMempoolFeeSummary()
-
       try {
+        // const payload = {
+        //   orderId: order.order_id,
+        //   paymentAddress: order.payment_address,
+        //   paymentPublicKey: order.payment_address_public_key,
+        //   ordinalAddress: order.ordinal_address,
+        //   ordinalPublicKey: order.ordinal_address_public_key,
+        //   feeRate: fee
+        // }
         const payload = {
           orderId: order.order_id,
-          paymentAddress: order.payment_address,
-          paymentPublicKey: order.payment_address_public_key,
-          ordinalsAddress: order.ordinal_address,
-          ordinalPublicKey: order.ordinal_address_public_key,
-          feeRate: fee
+          userAddress: order.payment_address,
+          userPublicKey: order.payment_address_public_key,
+          userOrdinalPublicKey: order.ordinal_address_public_key,
+          userOrdinalsAddress: order.ordinal_address,
+          feeRate: fee,
         }
         return await inscription.createParentChildPsbt(payload)
       } catch (error) {
@@ -67,12 +79,38 @@ export const useOrderStore = defineStore('order', {
       }
     },
     async signPsbtByWalletType(walletType, parentChildPsbt) {
+      const authStore = useAuthStore()
       if (walletType === 'unisat') {
         const unisat = window.unisat
         return await unisat.signPsbt(parentChildPsbt.psbtBase64, {
           autoFinalized: true
         })
-      } else {
+      } else if (walletType === 'xverse') {
+        try {
+          const response = await Wallet.request('signPsbt', {
+            psbt: parentChildPsbt.psbtBase64,
+            allowedSignHash: btc.SignatureHash.ALL,
+            signInputs: {
+              [authStore.getPaymentAddress]: parentChildPsbt.paymentInputIndices,
+              [authStore.getOrdinalAddress]: parentChildPsbt.ordinalInputIndices,
+            },
+            broadcast: true,
+          });
+          if (response.status === "success") {
+            return response
+          } else {
+            if (response.error.code === RpcErrorCode.USER_REJECTION) {
+              showToast('User rejected to sign', 'error')
+              console.log(response.error)
+            } else {
+              console.log(response.error)
+            }
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      }
+      else {
         console.log('sign psbt', walletType)
         return null
       }
@@ -83,11 +121,9 @@ export const useOrderStore = defineStore('order', {
         return await unisat.pushPsbt(signedPsbt)
       }
     },
-    createChildrenFilesPayload(files) {
-      return files.map((file) => ({
-        name: `${file.label}.txt`,
-        type: 'plain/text',
-        size: new TextEncoder().encode(file.label).length,
+    createChildrenDelegatesPayload(delegates) {
+      return delegates.map((file) => ({
+        delegateId: "7eadd4b747543ba48e267f9c117dfcdcffe194260faceb9eba9f63937b692800i0",
         dataURL: `data:plain/text;base64,${btoa(file.label)}`
       }))
     },
@@ -119,7 +155,7 @@ export const useOrderStore = defineStore('order', {
         return
       }
 
-      if (apiData.selectedFiles.length === 0) {
+      if (apiData.selectedDelegates.length === 0) {
         showToast('Please select at least 1 option', 'error')
         this.fetching = false
         return
@@ -131,11 +167,11 @@ export const useOrderStore = defineStore('order', {
       }
 
       try {
-        const selectedFiles = apiData.selectedFiles
-        const files = this.createChildrenFilesPayload(selectedFiles)
+        const selectedDelegates = apiData.selectedDelegates
+        const delegates = this.createChildrenDelegatesPayload(selectedDelegates)
         const fee = await getMempoolFeeSummary()
         const requestPayload = this.createRequestPayload(
-          files,
+          delegates,
           parents,
           fee,
           authStore.getOrdinalAddress
@@ -155,14 +191,15 @@ export const useOrderStore = defineStore('order', {
         showToast('Something went wrong', 'error')
       }
     },
-    createRequestPayload(files, parents, fee, receiveAddress) {
+    createRequestPayload(delegates, parents, fee, receiveAddress) {
       return {
-        files,
+        delegates,
         parents,
         receiveAddress,
         lowPostage: true,
         fee,
-        webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`
+        webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`,
+        inscriptionIdPrefix: "00"
       }
     },
     async handleDirectOrderButtonClick() {

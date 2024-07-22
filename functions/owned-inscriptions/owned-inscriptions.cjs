@@ -15,7 +15,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const handler = async (event) => {
   const address = event.queryStringParameters.address
-  const network = 'testnet'
+  const network = 'mainnet'
 
   if (!address) {
     return {
@@ -32,10 +32,11 @@ const handler = async (event) => {
 
     while (hasMoreData) {
       const response = await axios.get(
-        `https://open-api${network === 'testnet' ? '-testnet' : ''}.unisat.io/v1/indexer/address/${address}/inscription-data`,
+        `https://open-api${network == 'testnet' ? '-testnet.' : '.'}unisat.io/v1/indexer/address/${address}/inscription-data`,
         {
           headers: {
-            Authorization: `Bearer ${getNextApiKey()}`
+            Authorization: `Bearer ${getNextApiKey()}`,
+            accept: "application/json"
           },
           params: {
             cursor: cursor,
@@ -43,6 +44,8 @@ const handler = async (event) => {
           }
         }
       )
+
+      console.log(response.data)
       const data = response.data
       hasMoreData = response.data.data.totalConfirmed > cursor + size
       if (data && data.data && data.data.inscription.length > 0) {
