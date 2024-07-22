@@ -166,6 +166,9 @@ export const useOrderStore = defineStore('order', {
           fee,
           authStore.getOrdinalAddress
         )
+
+        console.log('requestPayload', requestPayload)
+
         const ordinalsbot = getOrdinalsbotInstance()
         const inscription = ordinalsbot.Inscription()
         const response = await inscription.createDirectOrder(requestPayload)
