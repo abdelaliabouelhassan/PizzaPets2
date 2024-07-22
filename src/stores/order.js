@@ -31,8 +31,10 @@ export const useOrderStore = defineStore('order', {
   actions: {
     async handleOrderUpdate(newOrder) {
       this.setOrder(newOrder)
-      const parentChildPsbt = await this.createParentChildPsbt(newOrder)
-      await this.signPsbt(newOrder, parentChildPsbt)
+      if (newOrder.order_status == "waiting-parent") {
+        const parentChildPsbt = await this.createParentChildPsbt(newOrder)
+        await this.signPsbt(newOrder, parentChildPsbt)
+      }
     },
     async createParentChildPsbt(order) {
       const authStore = useAuthStore()
