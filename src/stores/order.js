@@ -6,7 +6,14 @@ import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
 import { defineStore } from 'pinia'
-import Wallet, { RpcErrorCode } from 'sats-connect'
+import Wallet, {
+  RpcErrorCode,
+  BitcoinNetworkType,
+  signTransaction,
+  getProviders
+} from 'sats-connect'
+
+import axios from 'axios'
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
@@ -28,6 +35,8 @@ export const useOrderStore = defineStore('order', {
       await this.signPsbt(newOrder, parentChildPsbt)
     },
     async createParentChildPsbt(order) {
+      const authStore = useAuthStore()
+      const walletType = authStore.getWalletType.toLowerCase()
       const ordinalsbot = getOrdinalsbotInstance()
       const inscription = ordinalsbot.Inscription()
       const fee = await getMempoolFeeSummary()
@@ -40,7 +49,15 @@ export const useOrderStore = defineStore('order', {
           userOrdinalsAddress: order.ordinal_address,
           feeRate: fee
         }
-        return await inscription.createParentChildPsbt(payload)
+        if (walletType === 'xverse') {
+          return await inscription.createParentChildPsbt(payload)
+        } else {
+          const response = await axios.post(
+            'https://api.ordinalsbot.com/create-parent-child-psbt',
+            payload
+          )
+          return response.data
+        }
       } catch (error) {
         console.error('Failed to create Parent Child PSBT:', error)
         showToast('Failed to create Parent Child PSBT', 'error')
@@ -49,30 +66,34 @@ export const useOrderStore = defineStore('order', {
     async signPsbt(order, parentChildPsbt) {
       const authStore = useAuthStore()
       const walletType = authStore.getWalletType.toLowerCase()
-
+      const modalStore = useModalStore()
+      const apiData = useApiData()
       try {
         console.log('order', order)
         console.log('parentChildPsbt', parentChildPsbt)
         console.log('walletType', walletType)
-        const signedPsbt = await this.signPsbtByWalletType(walletType, parentChildPsbt)
-        console.log('signedPsbt:', signedPsbt)
-
-        if (signedPsbt) {
-          const tx = await this.pushSignedPsbt(walletType, signedPsbt)
-          this.txId = tx
-        }
+        const txId = await this.signPsbtByWalletType(walletType, parentChildPsbt)
+        console.log('signedPsbt:', txId)
+        this.txId = txId
       } catch (error) {
+        apiData.delegates?.forEach((delegate) => (delegate.selected = false))
+        apiData.parents?.forEach((delegate) => (delegate.selected = false))
+        modalStore.closeModal('order-summary')
         console.error('Failed to sign PSBT:', error)
-        showToast('Failed to sign PSBT', 'error')
+        showToast('User rejected to sign', 'error')
       }
     },
     async signPsbtByWalletType(walletType, parentChildPsbt) {
       const authStore = useAuthStore()
+      const modalStore = useModalStore()
+      const apiData = useApiData()
       if (walletType === 'unisat') {
         const unisat = window.unisat
-        return await unisat.signPsbt(parentChildPsbt.psbtBase64, {
+        const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
           autoFinalized: true
         })
+        const tx = await unisat.pushPsbt(signedPsbt)
+        return tx
       } else if (walletType === 'xverse') {
         try {
           const response = await Wallet.request('signPsbt', {
@@ -83,11 +104,17 @@ export const useOrderStore = defineStore('order', {
             },
             broadcast: true
           })
-          console.log({ response })
           if (response.status === 'success') {
-            return response
+            if (response) {
+              return response.result.txid
+            } else {
+              console.log('PSBT signed but transaction ID not returned');
+            }
           } else {
             if (response.error.code === RpcErrorCode.USER_REJECTION) {
+              apiData.parents?.forEach((delegate) => (delegate.selected = false))
+              apiData.delegates?.forEach((delegate) => (delegate.selected = false))
+              modalStore.closeModal('order-summary')
               showToast('User rejected to sign', 'error')
               console.log(response.error)
             } else {
@@ -97,17 +124,43 @@ export const useOrderStore = defineStore('order', {
         } catch (err) {
           console.log(err)
         }
-      } else {
-        console.log('sign psbt', walletType)
-        return null
+      } else if (walletType === 'magiceden') {
+        try {
+          const networkType =
+            import.meta.env.VITE_NETWORK === 'testnet'
+              ? BitcoinNetworkType.Testnet
+              : BitcoinNetworkType.Mainnet
+          const data = await signTransaction({
+            provider: getProviders(),
+            payload: {
+              network: networkType,
+              psbtBase64: parentChildPsbt.psbtBase64,
+              broadcast: true,
+              inputsToSign: [
+                {
+                  address: authStore.getPaymentAddress,
+                  signingIndexes: parentChildPsbt.paymentInputIndices
+                }
+              ]
+            },
+            onFinish: (response) => {
+              console.log('Bulk tx signing response:', response)
+              return response
+            },
+            onCancel: () => {
+              apiData.delegates?.forEach((delegate) => (delegate.selected = false))
+              apiData.parents?.forEach((delegate) => (delegate.selected = false))
+              modalStore.closeModal('order-summary')
+              showToast('User rejected to sign', 'error')
+            }
+          })
+          console.log(data)
+        } catch (err) {
+          console.error(err)
+        }
       }
     },
-    async pushSignedPsbt(walletType, signedPsbt) {
-      if (walletType === 'unisat') {
-        const unisat = window.unisat
-        return await unisat.pushPsbt(signedPsbt)
-      }
-    },
+
     createChildrenDelegatesPayload(delegates) {
       return delegates.map((file) => ({
         delegateId: file.inscriptionId,
@@ -195,10 +248,12 @@ export const useOrderStore = defineStore('order', {
     },
     async handleDirectOrderButtonClick() {
       const apiData = useApiData()
+      console.log(apiData.selectedParents)
+
       const parents = apiData.selectedParents.map((data) => ({
         inscriptionId: data.inscriptionId,
         returnAddress: data.address,
-        value: data.outSatoshi
+        value: data.utxo.satoshi
       }))
       await this.sendInscription(parents)
     },

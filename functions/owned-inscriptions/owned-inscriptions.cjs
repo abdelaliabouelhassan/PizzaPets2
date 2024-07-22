@@ -45,7 +45,6 @@ const handler = async (event) => {
         }
       )
 
-      console.log(response.data)
       const data = response.data
       hasMoreData = response.data.data.totalConfirmed > cursor + size
       if (data && data.data && data.data.inscription.length > 0) {

@@ -43,7 +43,7 @@ const handler = async (event) => {
     ]
 
     const status = validStates.includes(state) ? state : 'unknown-state'
-    await updateOrderStatus(id, status, data)
+    if (status != 'unknown-state') await updateOrderStatus(id, status, data)
 
     return {
       statusCode: 200,

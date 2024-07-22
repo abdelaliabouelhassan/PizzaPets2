@@ -35,21 +35,27 @@ const isFirstButtonVisible = computed(() => currentPage.value > 1)
     <div class="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
       <div v-for="(parent, i) in paginatedParents" :key="i" class="relative">
         <div
-          class="group h-full cursor-pointer bg-gray-100 duration-200 focus-within:ring-2 focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 hover:scale-105"
+          class="h-full duration-200 bg-gray-100 cursor-pointer group focus-within:ring-2 focus-within:ring-white focus-within:ring-offset-2 focus-within:ring-offset-gray-100 hover:scale-105"
           :class="{ 'ring-4 ring-black': parent.selected }"
           @click="orderStore.toggleParentSelectionFromOrder(parent)"
         >
           <img
-            v-if="parent.contentType.startsWith('image/')"
+            v-if="parent.contentType.startsWith('image/') && !parent.contentType.endsWith('svg+xml')"
             :src="`https://ordinals.com/content/${parent.inscriptionId}`"
             alt=""
-            class="h-full w-full object-cover group-hover:opacity-75"
+            class="object-cover w-full h-full group-hover:opacity-75"
           />
+          <iframe
+            v-else-if="parent.contentType.endsWith('svg+xml')"
+            :src="`https://ordinals.com/content/${parent.inscriptionId}`"
+            class="w-full h-full border-none"
+            frameborder="0"
+          ></iframe>
           <video
             v-else-if="parent.contentType.startsWith('video/')"
             autoplay
             loop
-            class="h-full w-full object-cover group-hover:opacity-75"
+            class="object-cover w-full h-full group-hover:opacity-75"
           >
             <source
               :src="`https://ordinals.com/content/${parent.inscriptionId}`"
@@ -60,24 +66,27 @@ const isFirstButtonVisible = computed(() => currentPage.value > 1)
             v-else-if="parent.contentType.startsWith('text/')"
             :src="`https://ordinals.com/content/${parent.inscriptionId}`"
             :title="`text ${i + 1}`"
-            class="h-full w-full object-cover group-hover:opacity-75"
+            class="object-cover w-full h-full group-hover:opacity-75"
           ></iframe>
           <iframe
             v-else-if="parent.contentType.startsWith('text/html')"
             :src="`https://ordinals.com/content/${parent.inscriptionId}`"
             :title="`html ${i + 1}`"
-            class="h-full w-full object-cover group-hover:opacity-75"
+            class="object-cover w-full h-full group-hover:opacity-75"
           ></iframe>
+          <div v-else  :title="`text ${i + 1}`" class="object-cover w-full h-full group-hover:opacity-75">
+            {{ parent.textContent }}
+          </div>
         </div>
       </div>
     </div>
-    <div v-if="authStore.isLoggedIn" class="mt-12 flex justify-center">
+    <div v-if="authStore.isLoggedIn" class="flex justify-center mt-12">
       <AppButton
         @click="goToPage(currentPage - 1)"
         :label="'Previous'"
         :customClass="`${isFirstButtonVisible ? 'visible' : 'invisible'} px-4 py-2 mx-1 bg-black text-white w-[100px]`"
       />
-      <span v-if="totalPages > 1" class="mx-1 px-4 py-2 text-white">
+      <span v-if="totalPages > 1" class="px-4 py-2 mx-1 text-white">
         {{ currentPage }} / {{ totalPages }}
       </span>
       <AppButton
