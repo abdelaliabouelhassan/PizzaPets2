@@ -1,6 +1,6 @@
 import { useApiData } from '@/stores/apidata'
 import { defineStore } from 'pinia'
-import { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
+import Wallet, { AddressPurpose, BitcoinNetworkType, getAddress } from 'sats-connect'
 import { showToast } from '../utils/toast'
 import { useOrderStore } from './order'
 
@@ -56,8 +56,12 @@ export const useAuthStore = defineStore('auth', {
         } else if (walletType === 'MagicEden') {
           await this.connectMagicEdenWallet(walletType)
         } else {
-          const getAddressOptions = this.getAddressOptions(walletType)
-          await getAddress(getAddressOptions)
+
+          const res = await Wallet.request('getAccounts', {
+            purposes: [AddressPurpose.Payment, AddressPurpose.Ordinals, AddressPurpose.Stacks],
+          });
+          this.handleAddressResponse(walletType, res.result)
+
         }
       } catch (err) {
         console.log(err)
@@ -84,7 +88,7 @@ export const useAuthStore = defineStore('auth', {
       getAddressOptions.getProvider = async () => magicEden
 
       const response = await getAddress(getAddressOptions)
-      this.handleAddressResponse(walletType, response)
+      this.handleAddressResponse(walletType, response.addresses)
     },
     async ensureCorrectNetwork(unisat) {
       let network = await unisat.getNetwork()
@@ -107,7 +111,7 @@ export const useAuthStore = defineStore('auth', {
           message: 'Address for receiving Ordinals and payments',
           network: { type: networkType }
         },
-        onFinish: (response) => this.handleAddressResponse(walletType, response),
+        onFinish: (response) => this.handleAddressResponse(walletType, response.addresses),
         onCancel: () => showToast('Request canceled', 'error')
       }
 
@@ -117,10 +121,10 @@ export const useAuthStore = defineStore('auth', {
       if (response === undefined) {
         return
       }
-      const paymentAddress = this.getAddressByPurpose(response.addresses, 'payment')
-      const ordinalAddress = this.getAddressByPurpose(response.addresses, 'ordinals')
-      const paymentAddressPublicKey = this.getPublicKeyByPurpose(response.addresses, 'payment')
-      const ordinalAddressPublicKey = this.getPublicKeyByPurpose(response.addresses, 'ordinals')
+      const paymentAddress = this.getAddressByPurpose(response, 'payment')
+      const ordinalAddress = this.getAddressByPurpose(response, 'ordinals')
+      const paymentAddressPublicKey = this.getPublicKeyByPurpose(response, 'payment')
+      const ordinalAddressPublicKey = this.getPublicKeyByPurpose(response, 'ordinals')
 
       this.updateLocalStorage(
         walletType,

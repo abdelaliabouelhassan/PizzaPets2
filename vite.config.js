@@ -15,6 +15,9 @@ export default defineConfig({
       buffer: 'buffer'
     }
   },
+  server: {
+    host: "127.0.0.1",
+  },
   define: {
     'process.env': {}
   },
