@@ -35,7 +35,7 @@ const handler = async (event) => {
         `https://open-api${network == 'testnet' ? '-testnet.' : '.'}unisat.io/v1/indexer/address/${address}/inscription-data`,
         {
           headers: {
-            Authorization: `Bearer ${getNextApiKey}`,
+            Authorization: `Bearer ${getNextApiKey()}`,
             accept: "application/json"
           },
           params: {
