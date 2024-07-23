@@ -28,10 +28,13 @@ const emits = defineEmits(['click'])
 
 const handleClick = (event) => {
   if (!props.disabled && !props.isLoading) {
-    if(apiData.fee > apiData.lowFee ){
-      emits('click', event)
-    } else{
-      showToast(`fee should be greater than ${apiData.lowFee} sats`, 'error')
+    if(props.label != "Submit") emits('click', event)
+    else{
+      if(apiData.fee > apiData.lowFee ){
+          emits('click', event)
+        } else{
+          showToast(`fee should be greater than ${apiData.lowFee} sats`, 'error')
+        }
     }
   }
 }
