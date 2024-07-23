@@ -41,7 +41,8 @@ export default defineConfig({
       ]
     },
     sourcemap: false,
-    minify: true
+    minify: true,
+    target: "es2022"
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -53,7 +54,11 @@ export default defineConfig({
       ],
       define: {
         global: 'globalThis'
-      }
+      },
+      target: "es2022",
     }
   },
+  esbuild: {
+    target: 'es2022',
+  }
 })
