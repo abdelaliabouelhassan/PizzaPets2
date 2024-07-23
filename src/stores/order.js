@@ -8,7 +8,7 @@ import { showToast } from '@/utils/toast'
 import axios from 'axios'
 import { Psbt, initEccLib } from 'bitcoinjs-lib'
 import { defineStore } from 'pinia'
-import Wallet, { BitcoinNetworkType, RpcErrorCode, signTransaction } from 'sats-connect'
+import Wallet, { BitcoinNetworkType, signTransaction } from 'sats-connect'
 import * as ecc from 'tiny-secp256k1'
 
 initEccLib(ecc)
@@ -29,9 +29,9 @@ export const useOrderStore = defineStore('order', {
   actions: {
     async handleOrderUpdate(newOrder) {
       this.setOrder(newOrder)
-      if (newOrder.order_status == 'waiting-parent') {
+      if (newOrder.order_status === 'waiting-parent') {
         const parentChildPsbt = await this.createParentChildPsbt(newOrder)
-        await this.signPsbt(newOrder, parentChildPsbt)
+        await this.signPsbt(parentChildPsbt)
       }
     },
     async createParentChildPsbt(order) {
@@ -40,15 +40,17 @@ export const useOrderStore = defineStore('order', {
       const ordinalsbot = getOrdinalsbotInstance()
       const inscription = ordinalsbot.Inscription()
       const fee = await getMempoolFeeSummary()
+
+      const payload = {
+        orderId: order.order_id,
+        userAddress: order.payment_address,
+        userPublicKey: order.payment_address_public_key,
+        userOrdinalPublicKey: order.ordinal_address_public_key,
+        userOrdinalsAddress: order.ordinal_address,
+        feeRate: fee
+      }
+
       try {
-        const payload = {
-          orderId: order.order_id,
-          userAddress: order.payment_address,
-          userPublicKey: order.payment_address_public_key,
-          userOrdinalPublicKey: order.ordinal_address_public_key,
-          userOrdinalsAddress: order.ordinal_address,
-          feeRate: fee
-        }
         if (walletType === 'xverse') {
           return await inscription.createParentChildPsbt(payload)
         } else {
@@ -63,9 +65,10 @@ export const useOrderStore = defineStore('order', {
         showToast('Failed to create Parent Child PSBT', 'error')
       }
     },
-    async signPsbt(order, parentChildPsbt) {
+    async signPsbt(parentChildPsbt) {
       const authStore = useAuthStore()
       const walletType = authStore.getWalletType.toLowerCase()
+
       try {
         const txId = await this.signPsbtByWalletType(walletType, parentChildPsbt)
         this.txId = txId
@@ -74,139 +77,120 @@ export const useOrderStore = defineStore('order', {
       }
     },
     async signPsbtByWalletType(walletType, parentChildPsbt) {
-      const authStore = useAuthStore()
       const modalStore = useModalStore()
       const apiData = useApiData()
-      if (walletType === 'unisat') {
-        try {
-          const unisat = window.unisat
-          const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
-            autoFinalized: true
-          })
-          const tx = await unisat.pushPsbt(signedPsbt)
-          return tx
-        } catch (error) {
-          apiData.delegates?.forEach((delegate) => (delegate.selected = false))
-          apiData.parents?.forEach((delegate) => (delegate.selected = false))
-          modalStore.closeModal('order-summary')
-          console.error('Failed to sign PSBT:', error)
-          showToast('User rejected to sign signpsbt', 'error')
+
+      try {
+        switch (walletType) {
+          case 'unisat':
+            return await this.signPsbtWithUnisat(parentChildPsbt)
+          case 'xverse':
+            return await this.signPsbtWithXverse(parentChildPsbt)
+          case 'magiceden':
+            return await this.signPsbtWithMagicEden(parentChildPsbt)
+          default:
+            throw new Error('Unsupported wallet type')
         }
-      } else if (walletType === 'xverse') {
-        try {
-          const response = await Wallet.request('signPsbt', {
-            psbt: parentChildPsbt.psbtBase64,
-            signInputs: {
-              [authStore.getPaymentAddress]: parentChildPsbt.paymentInputIndices,
-              [authStore.getOrdinalAddress]: parentChildPsbt.ordinalInputIndices
-            },
-            broadcast: true
-          })
-          if (response.status === 'success') {
-            if (response) {
-              return response.result.txid
-            } else {
-              console.log('PSBT signed but transaction ID not returned')
-            }
-          } else {
-            if (response.error.code === RpcErrorCode.USER_REJECTION) {
-              apiData.parents?.forEach((delegate) => (delegate.selected = false))
-              apiData.delegates?.forEach((delegate) => (delegate.selected = false))
-              modalStore.closeModal('order-summary')
-              showToast('User rejected to sign', 'error')
-              console.log(response.error)
-            } else {
-              console.log(response.error)
-            }
-          }
-        } catch (err) {
-          console.log(err)
-        }
-      } else if (walletType === 'magiceden') {
-        try {
-          const networkType =
-            import.meta.env.VITE_NETWORK === 'testnet'
-              ? BitcoinNetworkType.Testnet
-              : BitcoinNetworkType.Mainnet
-          console.log({ networkType })
-          return new Promise((resolve, reject) =>
-            signTransaction({
-              getProvider: async () => window.magicEden?.bitcoin,
-              payload: {
-                network: {
-                  type: networkType
-                },
-                psbtBase64: parentChildPsbt.psbtBase64,
-                broadcast: false,
-                inputsToSign: [
-                  {
-                    address: authStore.getPaymentAddress,
-                    signingIndexes: parentChildPsbt.paymentInputIndices
-                  },
-                  {
-                    address: authStore.getOrdinalAddress,
-                    signingIndexes: parentChildPsbt.ordinalInputIndices
-                  }
-                ]
-              },
-              onFinish: async (response) => {
-                console.log('Bulk tx signing response:', response)
-                const psbResponse = Psbt.fromBase64(response.psbtBase64)
-                console.log('psbt res: ', psbResponse)
-                psbResponse.finalizeAllInputs()
-                const signedTx = psbResponse.extractTransaction()
-                const rawTx = signedTx.toHex()
-                const postData = async (url, json, content_type = 'text/plain', apikey = '') => {
-                  while (true) {
-                    try {
-                      const headers = {}
-
-                      if (content_type) headers['Content-Type'] = content_type
-
-                      if (apikey) headers['X-Api-Key'] = apikey
-                      const res = await axios.post(url, json, {
-                        headers
-                      })
-
-                      return res.data
-                    } catch (err) {
-                      const axiosErr = err
-                      const response = axiosErr && axiosErr.response
-                      const data = response && response.data
-
-                      if (
-                        !(
-                          data &&
-                          data.includes(
-                            'sendrawtransaction RPC error: {"code":-26,"message":"too-long-mempool-chain,'
-                          )
-                        )
-                      ) {
-                        throw new Error('Got an error when pushing transaction')
-                      }
-                    }
-                  }
-                }
-                const txid = await postData(`https://mempool.space/api/tx`, rawTx)
-                console.log('signed tx id: ', txid)
-                resolve(txid)
-              },
-              onCancel: (error) => {
-                console.log(error)
-                apiData.delegates?.forEach((delegate) => (delegate.selected = false))
-                apiData.parents?.forEach((delegate) => (delegate.selected = false))
-                modalStore.closeModal('order-summary')
-                showToast('User rejected to sign', 'error')
-                reject('wallet canceled')
-              }
-            })
-          )
-        } catch (err) {
-          console.error(err)
-        }
+      } catch (error) {
+        apiData.delegates?.forEach((delegate) => (delegate.selected = false))
+        apiData.parents?.forEach((delegate) => (delegate.selected = false))
+        modalStore.closeModal('order-summary')
+        showToast('User rejected to sign PSBT', 'error')
+        throw error
       }
     },
+    async signPsbtWithUnisat(parentChildPsbt) {
+      const unisat = window.unisat
 
+      try {
+        const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
+          autoFinalized: true
+        })
+        return await unisat.pushPsbt(signedPsbt)
+      } catch (error) {
+        console.error('Failed to sign PSBT with Unisat:', error)
+        throw error
+      }
+    },
+    async signPsbtWithXverse(parentChildPsbt) {
+      const authStore = useAuthStore()
+
+      try {
+        const response = await Wallet.request('signPsbt', {
+          psbt: parentChildPsbt.psbtBase64,
+          signInputs: {
+            [authStore.getPaymentAddress]: parentChildPsbt.paymentInputIndices,
+            [authStore.getOrdinalAddress]: parentChildPsbt.ordinalInputIndices
+          },
+          broadcast: true
+        })
+
+        if (response.status === 'success') {
+          return response.result.txid
+        } else {
+          throw new Error(response.error.message || 'Unknown error')
+        }
+      } catch (error) {
+        console.error('Failed to sign PSBT with Xverse:', error)
+        throw error
+      }
+    },
+    async signPsbtWithMagicEden(parentChildPsbt) {
+      const authStore = useAuthStore()
+      const networkType =
+        import.meta.env.VITE_NETWORK === 'testnet'
+          ? BitcoinNetworkType.Testnet
+          : BitcoinNetworkType.Mainnet
+
+      return new Promise((resolve, reject) =>
+        signTransaction({
+          getProvider: async () => window.magicEden?.bitcoin,
+          payload: {
+            network: { type: networkType },
+            psbtBase64: parentChildPsbt.psbtBase64,
+            broadcast: false,
+            inputsToSign: [
+              {
+                address: authStore.getPaymentAddress,
+                signingIndexes: parentChildPsbt.paymentInputIndices
+              },
+              {
+                address: authStore.getOrdinalAddress,
+                signingIndexes: parentChildPsbt.ordinalInputIndices
+              }
+            ]
+          },
+          onFinish: async (response) => {
+            try {
+              const psbt = Psbt.fromBase64(response.psbtBase64)
+              psbt.finalizeAllInputs()
+              const signedTx = psbt.extractTransaction()
+              const rawTx = signedTx.toHex()
+              const txid = await this.broadcastTransaction(rawTx)
+              resolve(txid)
+            } catch (error) {
+              console.error('Failed to finalize and broadcast transaction:', error)
+              reject(error)
+            }
+          },
+          onCancel: (error) => {
+            console.error('User canceled transaction signing:', error)
+            reject('User canceled transaction signing')
+          }
+        })
+      )
+    },
+    async broadcastTransaction(rawTx) {
+      try {
+        const response = await axios.post('https://mempool.space/api/tx', rawTx, {
+          headers: { 'Content-Type': 'text/plain' }
+        })
+        return response.data
+      } catch (error) {
+        console.error('Failed to broadcast transaction:', error)
+        throw new Error('Failed to broadcast transaction')
+      }
+    },
     createChildrenDelegatesPayload(delegates) {
       return delegates.map((file) => ({
         delegateId: file.inscriptionId,
@@ -215,18 +199,23 @@ export const useOrderStore = defineStore('order', {
     },
     async insertOrderToSupabase(response) {
       const authStore = useAuthStore()
-      await supabase
-        .from('orders')
-        .insert({
-          payment_address: authStore.getPaymentAddress,
-          payment_address_public_key: authStore.getPaymentAddressPublicKey,
-          ordinal_address: authStore.getOrdinalAddress,
-          ordinal_address_public_key: authStore.getOrdinalAddressPublicKey,
-          order_id: response.id,
-          order_status: response.state,
-          order_content: response
-        })
-        .select()
+
+      try {
+        await supabase
+          .from('orders')
+          .insert({
+            payment_address: authStore.getPaymentAddress,
+            payment_address_public_key: authStore.getPaymentAddressPublicKey,
+            ordinal_address: authStore.getOrdinalAddress,
+            ordinal_address_public_key: authStore.getOrdinalAddressPublicKey,
+            order_id: response.id,
+            order_status: response.state,
+            order_content: response
+          })
+          .select()
+      } catch (error) {
+        console.error('Failed to insert order to Supabase:', error)
+      }
     },
     async sendInscription(parents) {
       const apiData = useApiData()
@@ -234,18 +223,21 @@ export const useOrderStore = defineStore('order', {
       const modalStore = useModalStore()
 
       if (this.fetching) return
+
       this.fetching = true
-      if (parents.length === 0) {
+
+      if (!parents.length) {
         showToast('Please select at least 1 parent', 'error')
         this.fetching = false
         return
       }
 
-      if (apiData.selectedDelegates.length === 0) {
+      if (!apiData.selectedDelegates.length) {
         showToast('Please select at least 1 option', 'error')
         this.fetching = false
         return
       }
+
       if (!authStore.getOrdinalAddress) {
         showToast('Please connect your wallet', 'error')
         this.fetching = false
@@ -253,9 +245,7 @@ export const useOrderStore = defineStore('order', {
       }
 
       try {
-        const selectedDelegates = apiData.selectedDelegates
-        const delegates = this.createChildrenDelegatesPayload(selectedDelegates)
-
+        const delegates = this.createChildrenDelegatesPayload(apiData.selectedDelegates)
         const fee = await getMempoolFeeSummary()
         const requestPayload = this.createRequestPayload(
           delegates,
@@ -263,8 +253,6 @@ export const useOrderStore = defineStore('order', {
           fee,
           authStore.getOrdinalAddress
         )
-
-        console.log('requestPayload', requestPayload)
 
         const ordinalsbot = getOrdinalsbotInstance()
         const inscription = ordinalsbot.Inscription()
@@ -276,9 +264,9 @@ export const useOrderStore = defineStore('order', {
         this.fetching = false
         return true
       } catch (error) {
-        this.fetching = false
         console.error('Something went wrong:', error)
         showToast('Something went wrong', 'error')
+        this.fetching = false
       }
     },
     createRequestPayload(delegates, parents, fee, receiveAddress) {
@@ -288,19 +276,18 @@ export const useOrderStore = defineStore('order', {
         receiveAddress,
         lowPostage: true,
         fee,
-        webhookUrl: `https://feed.pets.pizza/.netlify/functions/webhook`,
+        webhookUrl: 'https://feed.pets.pizza/.netlify/functions/webhook',
         inscriptionIdPrefix: '00'
       }
     },
     async handleDirectOrderButtonClick() {
       const apiData = useApiData()
-      console.log(apiData.selectedParents)
-
       const parents = apiData.selectedParents.map((data) => ({
         inscriptionId: data.inscriptionId,
         returnAddress: data.address,
         value: data.utxo.satoshi
       }))
+
       await this.sendInscription(parents)
     },
     resetState() {

@@ -39,7 +39,6 @@ export const useAuthStore = defineStore('auth', {
 
       this.clearLocalStorage()
       this.resetState()
-      showToast('Success Wallet Disconnect', 'success')
     },
     async connectWallet(walletType) {
       try {

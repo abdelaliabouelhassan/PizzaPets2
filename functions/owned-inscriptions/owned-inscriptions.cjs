@@ -27,7 +27,7 @@ const handler = async (event) => {
   try {
     let pets = []
     let cursor = 0
-    let size = 30
+    let size = 1000
     let hasMoreData = true
 
     while (hasMoreData) {
@@ -36,7 +36,7 @@ const handler = async (event) => {
         {
           headers: {
             Authorization: `Bearer ${getNextApiKey()}`,
-            accept: "application/json"
+            accept: 'application/json'
           },
           params: {
             cursor: cursor,
