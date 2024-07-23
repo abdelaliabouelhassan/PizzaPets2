@@ -130,7 +130,10 @@ export const useAuthStore = defineStore('auth', {
           message: 'Address for receiving Ordinals and payments',
           network: { type: networkType }
         },
-        onFinish: (response) => this.handleAddressResponse(walletType, response.addresses)
+        onFinish: (response) => {
+          console.log('response: ', response)
+          this.handleAddressResponse(walletType, response.addresses)
+        }
       }
 
       return options

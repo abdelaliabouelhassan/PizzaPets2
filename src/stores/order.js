@@ -10,10 +10,13 @@ import Wallet, {
   RpcErrorCode,
   BitcoinNetworkType,
   signTransaction,
-  getProviders
 } from 'sats-connect'
-
+import { Psbt, initEccLib } from 'bitcoinjs-lib';
+import * as ecc from "tiny-secp256k1";
 import axios from 'axios'
+
+initEccLib(ecc);
+
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
@@ -132,31 +135,84 @@ export const useOrderStore = defineStore('order', {
             import.meta.env.VITE_NETWORK === 'testnet'
               ? BitcoinNetworkType.Testnet
               : BitcoinNetworkType.Mainnet
-          const data = await signTransaction({
-            provider: getProviders(),
-            payload: {
-              network: networkType,
-              psbtBase64: parentChildPsbt.psbtBase64,
-              broadcast: true,
-              inputsToSign: [
-                {
-                  address: authStore.getPaymentAddress,
-                  signingIndexes: parentChildPsbt.paymentInputIndices
+          console.log({ networkType })
+          return new Promise((resolve, reject) =>
+            signTransaction({
+              getProvider: async () => window.magicEden?.bitcoin,
+              payload: {
+                network: {
+                  type: networkType
+                },
+                psbtBase64: parentChildPsbt.psbtBase64,
+                broadcast: false,
+                inputsToSign: [
+                  {
+                    address: authStore.getPaymentAddress,
+                    signingIndexes: parentChildPsbt.paymentInputIndices
+                  },
+                  {
+                    address: authStore.getOrdinalAddress,
+                    signingIndexes: parentChildPsbt.ordinalInputIndices
+                  }
+                ]
+              },
+              onFinish: async (response) => {
+                console.log('Bulk tx signing response:', response)
+                const psbResponse = Psbt.fromBase64(response.psbtBase64);
+                console.log("psbt res: ", psbResponse);
+                psbResponse.finalizeAllInputs();
+                const signedTx = psbResponse.extractTransaction();
+                const rawTx = signedTx.toHex();
+                const postData = async (
+                  url,
+                  json,
+                  content_type = 'text/plain',
+                  apikey = '',
+                ) => {
+                  while (true) {
+                    try {
+                      const headers = {};
+
+                      if (content_type) headers['Content-Type'] = content_type;
+
+                      if (apikey) headers['X-Api-Key'] = apikey;
+                      const res = await axios.post(url, json, {
+                        headers,
+                      });
+
+                      return res.data;
+                    } catch (err) {
+                      const axiosErr = err;
+                      const response = axiosErr && axiosErr.response;
+                      const data = response && response.data;
+
+                      if (
+                        !(data && data.includes(
+                          'sendrawtransaction RPC error: {"code":-26,"message":"too-long-mempool-chain,',
+                        ))
+                      ) {
+                        throw new Error('Got an error when pushing transaction');
+                      }
+                    }
+                  }
                 }
-              ]
-            },
-            onFinish: (response) => {
-              console.log('Bulk tx signing response:', response)
-              return response
-            },
-            onCancel: () => {
-              apiData.delegates?.forEach((delegate) => (delegate.selected = false))
-              apiData.parents?.forEach((delegate) => (delegate.selected = false))
-              modalStore.closeModal('order-summary')
-              showToast('User rejected to sign', 'error')
-            }
-          })
-          console.log(data)
+                const txid = await postData(
+                  `https://mempool.space/api/tx`,
+                  rawTx,
+                );
+                console.log("signed tx id: ", txid)
+                resolve(txid)
+              },
+              onCancel: (error) => {
+                console.log(error)
+                apiData.delegates?.forEach((delegate) => (delegate.selected = false))
+                apiData.parents?.forEach((delegate) => (delegate.selected = false))
+                modalStore.closeModal('order-summary')
+                showToast('User rejected to sign', 'error')
+                reject("wallet canceled")
+              }
+            })
+          )
         } catch (err) {
           console.error(err)
         }
