@@ -6,7 +6,9 @@ import delegatesData from '../delegates/delegates.json' // Import the JSON data
 export const useApiData = defineStore('apiData', {
   state: () => ({
     delegates: delegatesData.map((delegate) => ({ ...delegate, selected: false })),
-    parents: []
+    parents: [],
+    fee: 0,
+    lowFee: 0
   }),
   getters: {
     getDelegates: (state) => state.delegates,

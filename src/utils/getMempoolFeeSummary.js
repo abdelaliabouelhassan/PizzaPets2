@@ -13,17 +13,18 @@ import { showToast } from '@/utils/toast'
  * @returns {number} The recommended fee for the specified type.
  * @throws {Error} If an invalid fee type is provided or if there is an error fetching the data.
  */
-export const getMempoolFeeSummary = async (feeType = 'halfHourFee') => {
+export const getMempoolFeeSummary = async () => {
   try {
     const data = await fetch(
       `https://${import.meta.env.VITE_NETWORK === 'testnet' ? 'testnet.' : ''}mempool.space/api/v1/fees/recommended`
     )
     const jsonData = await data.json()
-    if (jsonData[feeType] !== undefined) {
-      return Math.ceil(jsonData[feeType])
-    } else {
-      showToast('Invalid fee type', 'error')
-    }
+    return jsonData
+    // if (jsonData[feeType] !== undefined) {
+    //   return Math.ceil(jsonData[feeType])
+    // } else {
+    //   showToast('Invalid fee type', 'error')
+    // }
   } catch (error) {
     showToast(`Error fetching mempool fee ${error}`, 'error')
   }

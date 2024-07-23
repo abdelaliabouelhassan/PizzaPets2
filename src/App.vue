@@ -3,6 +3,7 @@ import AppHeader from './components/ui/AppHeader.vue'
 import PizzaPets from './components/PizzaPets.vue'
 import ChildrenInscriptions from './components/ChildrenInscriptions.vue'
 import InscriptionSummary from './components/InscriptionSummary.vue'
+import FeeRate from './components/FeeRate.vue'
 import { computed, watch } from 'vue'
 import { useAuthStore } from './stores/auth'
 import { useApiData } from './stores/apidata'
@@ -33,10 +34,11 @@ watch(
 <template>
   <div class="max-w-[1170px] mx-auto mt-12 px-4 mb-24">
     <AppHeader />
-    <h1 class="uppercase text-4xl mt-16 mb-8 text-white ml-4">My pets</h1>
+    <h1 class="mt-16 mb-8 ml-4 text-4xl text-white uppercase">My pets</h1>
     <PizzaPets />
-    <h2 class="uppercase text-4xl mt-14 mb-8 text-white ml-4">Feed your pets</h2>
+    <h2 class="mb-8 ml-4 text-4xl text-white uppercase mt-14">Feed your pets</h2>
     <ChildrenInscriptions />
+    <FeeRate />
     <InscriptionSummary />
   </div>
 </template>
