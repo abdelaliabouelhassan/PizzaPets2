@@ -14,30 +14,20 @@ export const useAuthStore = defineStore('auth', {
     ordinalAddressPublicKey: localStorage.getItem('ordinalAddressPublicKey') || ''
   }),
   getters: {
-    isLoggedIn() {
-      return (
-        this.walletType !== '' &&
-        this.paymentAddress !== '' &&
-        this.paymentAddressPublicKey !== '' &&
-        this.ordinalAddress !== '' &&
-        this.ordinalAddressPublicKey !== ''
-      )
+    isLoggedIn(state) {
+      return [
+        'walletType',
+        'paymentAddress',
+        'paymentAddressPublicKey',
+        'ordinalAddress',
+        'ordinalAddressPublicKey'
+      ].every((key) => state[key] !== '')
     },
-    getWalletType() {
-      return this.walletType
-    },
-    getPaymentAddress() {
-      return this.paymentAddress
-    },
-    getPaymentAddressPublicKey() {
-      return this.paymentAddressPublicKey
-    },
-    getOrdinalAddress() {
-      return this.ordinalAddress
-    },
-    getOrdinalAddressPublicKey() {
-      return this.ordinalAddressPublicKey
-    }
+    getWalletType: (state) => state.walletType,
+    getPaymentAddress: (state) => state.paymentAddress,
+    getPaymentAddressPublicKey: (state) => state.paymentAddressPublicKey,
+    getOrdinalAddress: (state) => state.ordinalAddress,
+    getOrdinalAddressPublicKey: (state) => state.ordinalAddressPublicKey
   },
   actions: {
     signOut() {
@@ -46,41 +36,26 @@ export const useAuthStore = defineStore('auth', {
 
       const orderStore = useOrderStore()
       orderStore.resetState()
+
       this.clearLocalStorage()
       this.resetState()
+      showToast('Success Wallet Disconnect', 'success')
     },
     async connectWallet(walletType) {
       try {
-        if (walletType === 'Unisat') {
-          await this.connectUnisatWallet(walletType)
-        } else if (walletType === 'MagicEden') {
-          await this.connectMagicEdenWallet(walletType)
-        } else {
-          const providers = getProviders()
-          let isXverse = false
-          providers.map((provider) => {
-            if (provider.id == 'XverseProviders.BitcoinProvider') {
-              isXverse = true
-            }
-          })
-          if (isXverse) {
-            setDefaultProvider('XverseProviders.BitcoinProvider')
-            const res = await Wallet.request('getAccounts', {
-              purposes: [AddressPurpose.Payment, AddressPurpose.Ordinals]
-            })
-
-            if (res.status === 'error') {
-              return showToast(res.error.message, 'error')
-            }
-
-            this.handleAddressResponse(walletType, res.result)
-          } else {
-            showToast(`install ${walletType} Wallet2`, 'error')
-          }
+        switch (walletType) {
+          case 'Unisat':
+            await this.connectUnisatWallet(walletType)
+            break
+          case 'MagicEden':
+            await this.connectMagicEdenWallet(walletType)
+            break
+          default:
+            await this.connectOtherWallet(walletType)
         }
       } catch (err) {
-        console.log('connectWallet: ', err)
-        showToast(`Install ${walletType} Wallet3`, 'error')
+        console.error('connectWallet: ', err)
+        showToast(`Install ${walletType} Wallet`, 'error')
       }
     },
     async connectUnisatWallet(walletType) {
@@ -89,8 +64,7 @@ export const useAuthStore = defineStore('auth', {
       const addresses = await unisat.requestAccounts()
       const publicKey = await unisat.getPublicKey()
 
-      this.updateLocalStorage(walletType, addresses[0], addresses[0], publicKey, publicKey)
-      this.updateState(walletType, addresses[0], addresses[0], publicKey, publicKey)
+      this.updateStorageAndState(walletType, addresses[0], publicKey, addresses[0], publicKey)
     },
     async connectMagicEdenWallet(walletType) {
       const magicEden = window.magicEden?.bitcoin
@@ -99,18 +73,38 @@ export const useAuthStore = defineStore('auth', {
         return
       }
 
-      const getAddressOptions = this.getAddressOptions(walletType)
-      getAddressOptions.getProvider = async () => magicEden
+      const options = this.getAddressOptions(walletType)
+      options.getProvider = async () => magicEden
 
-      await getAddress(getAddressOptions)
+      await getAddress(options)
+    },
+    async connectOtherWallet(walletType) {
+      const providers = getProviders()
+      const isXverse = providers.some(
+        (provider) => provider.id === 'XverseProviders.BitcoinProvider'
+      )
+
+      if (isXverse) {
+        setDefaultProvider('XverseProviders.BitcoinProvider')
+        const res = await Wallet.request('getAccounts', {
+          purposes: [AddressPurpose.Payment, AddressPurpose.Ordinals]
+        })
+
+        if (res.status === 'error') {
+          return showToast(res.error.message, 'error')
+        }
+
+        this.handleAddressResponse(walletType, res.result)
+      } else {
+        showToast(`Install ${walletType} Wallet`, 'error')
+      }
     },
     async ensureCorrectNetwork(unisat) {
-      let network = await unisat.getNetwork()
-      if (network === 'livenet' && import.meta.env.VITE_NETWORK === 'testnet') {
-        await unisat.switchNetwork('testnet')
-      }
-      if (network === 'testnet' && import.meta.env.VITE_NETWORK === 'mainnet') {
-        await unisat.switchNetwork('livenet')
+      const currentNetwork = await unisat.getNetwork()
+      const desiredNetwork = import.meta.env.VITE_NETWORK === 'testnet' ? 'testnet' : 'livenet'
+
+      if (currentNetwork !== desiredNetwork) {
+        await unisat.switchNetwork(desiredNetwork)
       }
     },
     getAddressOptions(walletType) {
@@ -119,29 +113,48 @@ export const useAuthStore = defineStore('auth', {
           ? BitcoinNetworkType.Testnet
           : BitcoinNetworkType.Mainnet
 
-      const options = {
+      return {
         payload: {
           purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
           message: 'Address for receiving Ordinals and payments',
           network: { type: networkType }
         },
-        onFinish: (response) => {
-          console.log('response: ', response)
-          this.handleAddressResponse(walletType, response.addresses)
-        }
+        onFinish: (response) => this.handleAddressResponse(walletType, response.addresses)
       }
-
-      return options
     },
-    handleAddressResponse(walletType, response) {
-      if (response === undefined) {
-        return
-      }
-      const paymentAddress = this.getAddressByPurpose(response, 'payment')
-      const ordinalAddress = this.getAddressByPurpose(response, 'ordinals')
-      const paymentAddressPublicKey = this.getPublicKeyByPurpose(response, 'payment')
-      const ordinalAddressPublicKey = this.getPublicKeyByPurpose(response, 'ordinals')
+    handleAddressResponse(walletType, addresses) {
+      if (!addresses) return
 
+      const getAddress = (purpose) => {
+        const addr = addresses.find((addr) => addr.purpose === purpose)
+        return addr ? addr.address : ''
+      }
+
+      const getPublicKey = (purpose) => {
+        const addr = addresses.find((addr) => addr.purpose === purpose)
+        return addr ? addr.publicKey : ''
+      }
+
+      const paymentAddress = getAddress('payment')
+      const ordinalAddress = getAddress('ordinals')
+      const paymentAddressPublicKey = getPublicKey('payment')
+      const ordinalAddressPublicKey = getPublicKey('ordinals')
+
+      this.updateStorageAndState(
+        walletType,
+        paymentAddress,
+        paymentAddressPublicKey,
+        ordinalAddress,
+        ordinalAddressPublicKey
+      )
+    },
+    updateStorageAndState(
+      walletType,
+      paymentAddress,
+      paymentAddressPublicKey,
+      ordinalAddress,
+      ordinalAddressPublicKey
+    ) {
       this.updateLocalStorage(
         walletType,
         paymentAddress,
@@ -156,14 +169,6 @@ export const useAuthStore = defineStore('auth', {
         paymentAddressPublicKey,
         ordinalAddressPublicKey
       )
-    },
-    getAddressByPurpose(addresses, purpose) {
-      const addressObj = addresses.find((addr) => addr.purpose === purpose)
-      return addressObj ? addressObj.address : ''
-    },
-    getPublicKeyByPurpose(addresses, purpose) {
-      const addressObj = addresses.find((addr) => addr.purpose === purpose)
-      return addressObj ? addressObj.publicKey : ''
     },
     updateLocalStorage(
       walletType,
@@ -192,11 +197,13 @@ export const useAuthStore = defineStore('auth', {
       this.ordinalAddressPublicKey = ordinalAddressPublicKey
     },
     clearLocalStorage() {
-      localStorage.removeItem('walletType')
-      localStorage.removeItem('paymentAddress')
-      localStorage.removeItem('ordinalAddress')
-      localStorage.removeItem('paymentAddressPublicKey')
-      localStorage.removeItem('ordinalAddressPublicKey')
+      ;[
+        'walletType',
+        'paymentAddress',
+        'ordinalAddress',
+        'paymentAddressPublicKey',
+        'ordinalAddressPublicKey'
+      ].forEach((key) => localStorage.removeItem(key))
     },
     resetState() {
       this.walletType = ''

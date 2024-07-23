@@ -5,11 +5,11 @@ import inject from '@rollup/plugin-inject'
 import vue from '@vitejs/plugin-vue'
 import * as path from 'path'
 import { defineConfig } from 'vite'
-import wasm from 'vite-plugin-wasm';
-
+import { purgeCss } from 'vite-plugin-tailwind-purgecss'
+import wasm from 'vite-plugin-wasm'
 
 export default defineConfig({
-  plugins: [vue(), wasm()],
+  plugins: [vue(), wasm(), purgeCss()],
   resolve: {
     dedupe: ['vue'],
     alias: {
@@ -18,7 +18,7 @@ export default defineConfig({
     }
   },
   server: {
-    host: "127.0.0.1",
+    host: '127.0.0.1',
     hmr: {
       overlay: false
     }
@@ -42,7 +42,7 @@ export default defineConfig({
     },
     sourcemap: false,
     minify: true,
-    target: "es2022"
+    target: 'es2022'
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -55,10 +55,10 @@ export default defineConfig({
       define: {
         global: 'globalThis'
       },
-      target: "es2022",
+      target: 'es2022'
     }
   },
   esbuild: {
-    target: 'es2022',
+    target: 'es2022'
   }
 })
