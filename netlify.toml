@@ -11,10 +11,7 @@
 
 [[plugins]]
   package = "netlify-plugin-js-obfuscator"
-
-  # All inputs are optional, so you can omit this section.
-  # Defaults are shown below.
-  # You can also refer to `javascript-obfuscator`’s documentation: https://github.com/javascript-obfuscator/javascript-obfuscator.
+  # https://github.com/javascript-obfuscator/javascript-obfuscator.
   [plugins.inputs]
    # Compact code output on one line.
      compact = true

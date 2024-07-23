@@ -30,8 +30,8 @@ watch(
       {{ totalParents }} {{ totalParents > 1 ? 'pets' : 'pet' }}
     </h5>
     <AppButton
-      :disabled="orderStore.isFetching"
-      :isLoading="orderStore.isFetching"
+      :disabled="orderStore.isProcessingRequest"
+      :isLoading="orderStore.isProcessingRequest"
       label="Submit"
       @click="orderStore.handleDirectOrderButtonClick"
     />

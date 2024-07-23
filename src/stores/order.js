@@ -18,13 +18,14 @@ export const useOrderStore = defineStore('order', {
     currentOrderId: '',
     fetching: false,
     order: null,
-    txId: null
+    txId: null,
+    isSigning: false
   }),
   getters: {
     getCurrentOrderId: (state) => state.currentOrderId,
     getOrder: (state) => state.order,
-    isFetching: (state) => state.fetching,
-    getTxId: (state) => state.txId
+    getTxId: (state) => state.txId,
+    isProcessingRequest: (state) => state.isSigning || state.fetching
   },
   actions: {
     async handleOrderUpdate(newOrder) {
@@ -80,6 +81,11 @@ export const useOrderStore = defineStore('order', {
       const modalStore = useModalStore()
       const apiData = useApiData()
 
+      // Prevent multiple signing requests
+      if (this.isSigning) {
+        return showToast('Signature already pending', 'error')
+      }
+      this.isSigning = true
       try {
         switch (walletType) {
           case 'unisat':
@@ -92,6 +98,7 @@ export const useOrderStore = defineStore('order', {
             throw new Error('Unsupported wallet type')
         }
       } catch (error) {
+        this.isSigning = false // Reset signing state on error
         apiData.delegates?.forEach((delegate) => (delegate.selected = false))
         apiData.parents?.forEach((delegate) => (delegate.selected = false))
         modalStore.closeModal('order-summary')
@@ -106,8 +113,11 @@ export const useOrderStore = defineStore('order', {
         const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
           autoFinalized: true
         })
-        return await unisat.pushPsbt(signedPsbt)
+        const txId = await unisat.pushPsbt(signedPsbt)
+        this.isSigning = false
+        return txId
       } catch (error) {
+        this.isSigning = false
         console.error('Failed to sign PSBT with Unisat:', error)
         throw error
       }
@@ -126,11 +136,14 @@ export const useOrderStore = defineStore('order', {
         })
 
         if (response.status === 'success') {
+          this.isSigning = false
           return response.result.txid
         } else {
+          this.isSigning = false
           throw new Error(response.error.message || 'Unknown error')
         }
       } catch (error) {
+        this.isSigning = false
         console.error('Failed to sign PSBT with Xverse:', error)
         throw error
       }
@@ -167,13 +180,16 @@ export const useOrderStore = defineStore('order', {
               const signedTx = psbt.extractTransaction()
               const rawTx = signedTx.toHex()
               const txid = await this.broadcastTransaction(rawTx)
+              this.isSigning = false
               resolve(txid)
             } catch (error) {
+              this.isSigning = false
               console.error('Failed to finalize and broadcast transaction:', error)
               reject(error)
             }
           },
           onCancel: (error) => {
+            this.isSigning = false
             console.error('User canceled transaction signing:', error)
             reject('User canceled transaction signing')
           }
@@ -295,6 +311,7 @@ export const useOrderStore = defineStore('order', {
       this.currentOrderId = ''
       this.fetching = false
       this.txId = null
+      this.isSigning = false
     },
     setOrder(order) {
       this.order = order
