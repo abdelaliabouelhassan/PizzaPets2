@@ -71,8 +71,6 @@ export const useOrderStore = defineStore('order', {
     async signPsbt(order, parentChildPsbt) {
       const authStore = useAuthStore()
       const walletType = authStore.getWalletType.toLowerCase()
-      const modalStore = useModalStore()
-      const apiData = useApiData()
       try {
         console.log('order', order)
         console.log('parentChildPsbt', parentChildPsbt)
@@ -81,11 +79,7 @@ export const useOrderStore = defineStore('order', {
         console.log('signedPsbt:', txId)
         this.txId = txId
       } catch (error) {
-        apiData.delegates?.forEach((delegate) => (delegate.selected = false))
-        apiData.parents?.forEach((delegate) => (delegate.selected = false))
-        modalStore.closeModal('order-summary')
         console.error('Failed to sign PSBT:', error)
-        showToast('User rejected to sign', 'error')
       }
     },
     async signPsbtByWalletType(walletType, parentChildPsbt) {
@@ -93,12 +87,20 @@ export const useOrderStore = defineStore('order', {
       const modalStore = useModalStore()
       const apiData = useApiData()
       if (walletType === 'unisat') {
-        const unisat = window.unisat
-        const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
-          autoFinalized: true
-        })
-        const tx = await unisat.pushPsbt(signedPsbt)
-        return tx
+        try {
+          const unisat = window.unisat
+          const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
+            autoFinalized: true
+          })
+          const tx = await unisat.pushPsbt(signedPsbt)
+          return tx
+        } catch (error) {
+          apiData.delegates?.forEach((delegate) => (delegate.selected = false))
+          apiData.parents?.forEach((delegate) => (delegate.selected = false))
+          modalStore.closeModal('order-summary')
+          console.error('Failed to sign PSBT:', error)
+          showToast('User rejected to sign signpsbt', 'error')
+        }
       } else if (walletType === 'xverse') {
         try {
           const response = await Wallet.request('signPsbt', {
