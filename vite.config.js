@@ -5,11 +5,10 @@ import inject from '@rollup/plugin-inject'
 import vue from '@vitejs/plugin-vue'
 import * as path from 'path'
 import { defineConfig } from 'vite'
-import { purgeCss } from 'vite-plugin-tailwind-purgecss'
 import wasm from 'vite-plugin-wasm'
 
 export default defineConfig({
-  plugins: [vue(), wasm(), purgeCss()],
+  plugins: [vue(), wasm()],
   resolve: {
     dedupe: ['vue'],
     alias: {
