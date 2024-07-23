@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write src/",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build:css": "postcss ./src/assets/main.css -o ./dist/tailwind.css"
   },
   "dependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
