@@ -20,6 +20,7 @@
     "axios": "^1.7.2",
     "bitcoinjs-lib": "^6.1.6",
     "buffer": "^5.7.1",
+    "cssnano": "^7.0.4",
     "micro-btc-signer": "^0.4.2",
     "ordinalsbot": "^0.2.11",
     "pinia": "^2.1.7",
@@ -46,6 +47,7 @@
     "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.6",
     "vite": "^5.3.1",
+    "vite-plugin-tailwind-purgecss": "^0.3.3",
     "vite-plugin-vue-devtools": "^7.3.1",
     "vite-plugin-wasm": "^3.3.0"
   },

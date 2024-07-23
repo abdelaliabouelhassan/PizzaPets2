@@ -5,18 +5,13 @@ import { getMempoolFeeSummary } from '@/utils/getMempoolFeeSummary'
 import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
-import { defineStore } from 'pinia'
-import Wallet, {
-  RpcErrorCode,
-  BitcoinNetworkType,
-  signTransaction,
-} from 'sats-connect'
-import { Psbt, initEccLib } from 'bitcoinjs-lib';
-import * as ecc from "tiny-secp256k1";
 import axios from 'axios'
+import { Psbt, initEccLib } from 'bitcoinjs-lib'
+import { defineStore } from 'pinia'
+import Wallet, { BitcoinNetworkType, RpcErrorCode, signTransaction } from 'sats-connect'
+import * as ecc from 'tiny-secp256k1'
 
-initEccLib(ecc);
-
+initEccLib(ecc)
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
@@ -34,7 +29,7 @@ export const useOrderStore = defineStore('order', {
   actions: {
     async handleOrderUpdate(newOrder) {
       this.setOrder(newOrder)
-      if (newOrder.order_status == "waiting-parent") {
+      if (newOrder.order_status == 'waiting-parent') {
         const parentChildPsbt = await this.createParentChildPsbt(newOrder)
         await this.signPsbt(newOrder, parentChildPsbt)
       }
@@ -71,21 +66,11 @@ export const useOrderStore = defineStore('order', {
     async signPsbt(order, parentChildPsbt) {
       const authStore = useAuthStore()
       const walletType = authStore.getWalletType.toLowerCase()
-      const modalStore = useModalStore()
-      const apiData = useApiData()
       try {
-        console.log('order', order)
-        console.log('parentChildPsbt', parentChildPsbt)
-        console.log('walletType', walletType)
         const txId = await this.signPsbtByWalletType(walletType, parentChildPsbt)
-        console.log('signedPsbt:', txId)
         this.txId = txId
       } catch (error) {
-        apiData.delegates?.forEach((delegate) => (delegate.selected = false))
-        apiData.parents?.forEach((delegate) => (delegate.selected = false))
-        modalStore.closeModal('order-summary')
         console.error('Failed to sign PSBT:', error)
-        showToast('User rejected to sign', 'error')
       }
     },
     async signPsbtByWalletType(walletType, parentChildPsbt) {
@@ -93,12 +78,20 @@ export const useOrderStore = defineStore('order', {
       const modalStore = useModalStore()
       const apiData = useApiData()
       if (walletType === 'unisat') {
-        const unisat = window.unisat
-        const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
-          autoFinalized: true
-        })
-        const tx = await unisat.pushPsbt(signedPsbt)
-        return tx
+        try {
+          const unisat = window.unisat
+          const signedPsbt = await unisat.signPsbt(parentChildPsbt.psbtBase64, {
+            autoFinalized: true
+          })
+          const tx = await unisat.pushPsbt(signedPsbt)
+          return tx
+        } catch (error) {
+          apiData.delegates?.forEach((delegate) => (delegate.selected = false))
+          apiData.parents?.forEach((delegate) => (delegate.selected = false))
+          modalStore.closeModal('order-summary')
+          console.error('Failed to sign PSBT:', error)
+          showToast('User rejected to sign signpsbt', 'error')
+        }
       } else if (walletType === 'xverse') {
         try {
           const response = await Wallet.request('signPsbt', {
@@ -113,7 +106,7 @@ export const useOrderStore = defineStore('order', {
             if (response) {
               return response.result.txid
             } else {
-              console.log('PSBT signed but transaction ID not returned');
+              console.log('PSBT signed but transaction ID not returned')
             }
           } else {
             if (response.error.code === RpcErrorCode.USER_REJECTION) {
@@ -158,49 +151,44 @@ export const useOrderStore = defineStore('order', {
               },
               onFinish: async (response) => {
                 console.log('Bulk tx signing response:', response)
-                const psbResponse = Psbt.fromBase64(response.psbtBase64);
-                console.log("psbt res: ", psbResponse);
-                psbResponse.finalizeAllInputs();
-                const signedTx = psbResponse.extractTransaction();
-                const rawTx = signedTx.toHex();
-                const postData = async (
-                  url,
-                  json,
-                  content_type = 'text/plain',
-                  apikey = '',
-                ) => {
+                const psbResponse = Psbt.fromBase64(response.psbtBase64)
+                console.log('psbt res: ', psbResponse)
+                psbResponse.finalizeAllInputs()
+                const signedTx = psbResponse.extractTransaction()
+                const rawTx = signedTx.toHex()
+                const postData = async (url, json, content_type = 'text/plain', apikey = '') => {
                   while (true) {
                     try {
-                      const headers = {};
+                      const headers = {}
 
-                      if (content_type) headers['Content-Type'] = content_type;
+                      if (content_type) headers['Content-Type'] = content_type
 
-                      if (apikey) headers['X-Api-Key'] = apikey;
+                      if (apikey) headers['X-Api-Key'] = apikey
                       const res = await axios.post(url, json, {
-                        headers,
-                      });
+                        headers
+                      })
 
-                      return res.data;
+                      return res.data
                     } catch (err) {
-                      const axiosErr = err;
-                      const response = axiosErr && axiosErr.response;
-                      const data = response && response.data;
+                      const axiosErr = err
+                      const response = axiosErr && axiosErr.response
+                      const data = response && response.data
 
                       if (
-                        !(data && data.includes(
-                          'sendrawtransaction RPC error: {"code":-26,"message":"too-long-mempool-chain,',
-                        ))
+                        !(
+                          data &&
+                          data.includes(
+                            'sendrawtransaction RPC error: {"code":-26,"message":"too-long-mempool-chain,'
+                          )
+                        )
                       ) {
-                        throw new Error('Got an error when pushing transaction');
+                        throw new Error('Got an error when pushing transaction')
                       }
                     }
                   }
                 }
-                const txid = await postData(
-                  `https://mempool.space/api/tx`,
-                  rawTx,
-                );
-                console.log("signed tx id: ", txid)
+                const txid = await postData(`https://mempool.space/api/tx`, rawTx)
+                console.log('signed tx id: ', txid)
                 resolve(txid)
               },
               onCancel: (error) => {
@@ -209,7 +197,7 @@ export const useOrderStore = defineStore('order', {
                 apiData.parents?.forEach((delegate) => (delegate.selected = false))
                 modalStore.closeModal('order-summary')
                 showToast('User rejected to sign', 'error')
-                reject("wallet canceled")
+                reject('wallet canceled')
               }
             })
           )
