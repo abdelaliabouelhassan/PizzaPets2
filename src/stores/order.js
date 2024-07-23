@@ -1,7 +1,6 @@
 import { useApiData } from '@/stores/apidata'
 import { useAuthStore } from '@/stores/auth'
 import { useModalStore } from '@/stores/modal'
-import { getMempoolFeeSummary } from '@/utils/getMempoolFeeSummary'
 import { getOrdinalsbotInstance } from '@/utils/ordinalsBot'
 import { supabase } from '@/utils/supabase'
 import { showToast } from '@/utils/toast'
@@ -37,10 +36,11 @@ export const useOrderStore = defineStore('order', {
     },
     async createParentChildPsbt(order) {
       const authStore = useAuthStore()
+      const apiData = useApiData()
       const walletType = authStore.getWalletType.toLowerCase()
       const ordinalsbot = getOrdinalsbotInstance()
       const inscription = ordinalsbot.Inscription()
-      const fee = await getMempoolFeeSummary()
+      const fee = apiData.fee
 
       const payload = {
         orderId: order.order_id,
@@ -262,7 +262,7 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const delegates = this.createChildrenDelegatesPayload(apiData.selectedDelegates)
-        const fee = await getMempoolFeeSummary()
+        const fee = apiData.fee
         const requestPayload = this.createRequestPayload(
           delegates,
           parents,

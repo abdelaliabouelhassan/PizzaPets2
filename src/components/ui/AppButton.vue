@@ -1,5 +1,9 @@
 <script setup>
 import AppLoader from '@/components/icons/AppLoader.vue'
+import { useApiData } from '@/stores/apidata';
+import { showToast } from '@/utils/toast';
+
+const apiData = useApiData()
 
 const props = defineProps({
   label: {
@@ -24,7 +28,11 @@ const emits = defineEmits(['click'])
 
 const handleClick = (event) => {
   if (!props.disabled && !props.isLoading) {
-    emits('click', event)
+    if(apiData.fee > apiData.lowFee ){
+      emits('click', event)
+    } else{
+      showToast(`fee should be greater than ${apiData.lowFee} sats`, 'error')
+    }
   }
 }
 </script>
