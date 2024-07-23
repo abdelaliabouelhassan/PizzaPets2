@@ -4,6 +4,7 @@ import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfil
 import inject from '@rollup/plugin-inject'
 import vue from '@vitejs/plugin-vue'
 import * as path from 'path'
+import { terser } from 'rollup-plugin-terser'
 import { defineConfig } from 'vite'
 import wasm from 'vite-plugin-wasm'
 
@@ -40,7 +41,7 @@ export default defineConfig({
       ]
     },
     sourcemap: false,
-    minify: true,
+    minify: terser,
     target: 'es2022'
   },
   optimizeDeps: {
