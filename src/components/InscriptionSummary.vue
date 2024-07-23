@@ -24,7 +24,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex items-center justify-end px-4 mt-24 gap-x-12">
+  <div class="mt-24 flex items-center justify-end gap-x-12 px-4">
     <h5 class="text-2xl font-semibold">
       You are going to feed
       {{ totalParents }} {{ totalParents > 1 ? 'pets' : 'pet' }}
@@ -40,9 +40,12 @@ watch(
   <AppModal modalId="order-summary">
     <h1>ORDER ID: {{ orderStore.getCurrentOrderId }}</h1>
     <h1 v-if="orderStore.getOrder">ORDER STATUS: {{ orderStore.getOrder.order_status }}</h1>
-    <a :href="`https://mempool.space/tx/${orderStore.getTxId}`" target="_blank">
-      <h1 v-if="orderStore.getTxId">TX: {{ orderStore.getTxId }}</h1>
+    <a
+      v-if="orderStore.getTxId"
+      :href="`https://mempool.space/tx/${orderStore.getTxId}`"
+      target="_blank"
+    >
+      TX: {{ orderStore.getTxId }}
     </a>
-    <h1 v-if="orderStore.getOrder">ORDER DATA: {{ orderStore.getOrder }}</h1>
   </AppModal>
 </template>
