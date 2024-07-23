@@ -5,9 +5,11 @@ import inject from '@rollup/plugin-inject'
 import vue from '@vitejs/plugin-vue'
 import * as path from 'path'
 import { defineConfig } from 'vite'
+import wasm from 'vite-plugin-wasm';
+
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), wasm()],
   resolve: {
     dedupe: ['vue'],
     alias: {
@@ -17,6 +19,9 @@ export default defineConfig({
   },
   server: {
     host: "127.0.0.1",
+    hmr: {
+      overlay: false
+    }
   },
   define: {
     'process.env': {}
@@ -50,5 +55,5 @@ export default defineConfig({
         global: 'globalThis'
       }
     }
-  }
+  },
 })
