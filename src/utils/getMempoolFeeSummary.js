@@ -20,11 +20,6 @@ export const getMempoolFeeSummary = async () => {
     )
     const jsonData = await data.json()
     return jsonData
-    // if (jsonData[feeType] !== undefined) {
-    //   return Math.ceil(jsonData[feeType])
-    // } else {
-    //   showToast('Invalid fee type', 'error')
-    // }
   } catch (error) {
     showToast(`Error fetching mempool fee ${error}`, 'error')
   }

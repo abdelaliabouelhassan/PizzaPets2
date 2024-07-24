@@ -12,6 +12,13 @@ const selectedParents = computed(() => apiData.selectedParents)
 
 const totalParents = ref(0)
 
+const formatTxId = (txid) => {
+  if (!txid) return
+  const start = txid.slice(0, 6)
+  const end = txid.slice(-6)
+  return `${start}...${end}`
+}
+
 watch(
   selectedParents,
   (newVal) => {
@@ -45,7 +52,7 @@ watch(
       :href="`https://mempool.space/tx/${orderStore.getTxId}`"
       target="_blank"
     >
-      TX: {{ orderStore.getTxId }}
+      VIEW TX: {{ formatTxId(orderStore.getTxId) }}
     </a>
   </AppModal>
 </template>

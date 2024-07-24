@@ -1,8 +1,8 @@
 <script setup>
-import { ref, watchEffect, computed } from 'vue';
-import { useApiData } from '@/stores/apidata';
+import { ref, watchEffect, computed } from 'vue'
+import { useApiData } from '@/stores/apidata'
 import { getMempoolFeeSummary } from '@/utils/getMempoolFeeSummary'
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/stores/auth'
 
 // Initialize res as a reactive state variable
 const res = ref({
@@ -11,28 +11,29 @@ const res = ref({
   hourFee: 0,
   economyFee: 0,
   minimumFee: 0
-});
+})
+
 // Use API data from the store
 const apiData = useApiData()
 const authStore = useAuthStore()
 
 // Fetch data and update res
 watchEffect(async () => {
-  console.log("Fetching mempool fee summary...")
+  console.log('Fetching mempool fee summary...')
   res.value = await getMempoolFeeSummary()
   apiData.lowFee = res.value.minimumFee
-  console.log("Updated res:", res.value)
-});
-
+  apiData.fee = res.value.halfHourFee // Set default fee to halfHourFee
+  console.log('Updated res:', res.value)
+})
 
 // Define feeData as a computed property that updates based on res
 const feeData = computed(() => ({
   mediumFeeRate: res.value.halfHourFee,
-  highFeeRate: res.value.fastestFee,
-}));
+  highFeeRate: res.value.fastestFee
+}))
 
 // Fee mode state
-const feeMode = ref('medium')
+const feeMode = ref('medium') // Default mode set to 'medium'
 
 // Update feeMode and apiData.fee based on selected mode
 const setFeeMode = (mode) => {
@@ -40,23 +41,22 @@ const setFeeMode = (mode) => {
   if (mode !== 'custom') {
     apiData.fee = feeData.value[`${mode}FeeRate`]
   }
-};
+}
 
 // Update apiData.fee manually for 'custom' mode
 const onChangeFee = (value) => {
   apiData.fee = value
-};
-
+}
 </script>
 
 <template>
-  <div v-if="authStore.paymentAddress" class="text-white text-[24px]">
-    <div class="text-center text-[30px] text-white font-bold mt-14">
-      We recommend setting a high enough fee rate for your order to be
+  <div v-if="authStore.paymentAddress" class="mx-5 text-2xl text-white">
+    <div class="mt-14 text-center font-bold text-white">
+      We recommend setting a high enough fee rate for your order to be comfirmed
     </div>
-    <div class="grid grid-cols-3 gap-4 mt-4">
+    <div class="mt-4 grid grid-cols-3 gap-6">
       <div
-        class="py-4 text-center duration-200 border-4 border-black cursor-pointer ring-4 ring-white hover:scale-105"
+        class="cursor-pointer border-4 border-black py-4 text-center ring-4 ring-white duration-200 hover:scale-105"
         :class="feeMode === 'medium' ? 'bg-[#FF5400]' : 'bg-main'"
         @click="setFeeMode('medium')"
       >
@@ -64,7 +64,7 @@ const onChangeFee = (value) => {
         <div>{{ feeData.mediumFeeRate }} Sats / vByte</div>
       </div>
       <div
-        class="py-4 text-center duration-200 border-4 border-black cursor-pointer ring-4 ring-white hover:scale-105"
+        class="cursor-pointer border-4 border-black py-4 text-center ring-4 ring-white duration-200 hover:scale-105"
         :class="feeMode === 'high' ? 'bg-[#FF5400]' : 'bg-main'"
         @click="setFeeMode('high')"
       >
@@ -72,7 +72,7 @@ const onChangeFee = (value) => {
         <div>{{ feeData.highFeeRate }} Sats / vByte</div>
       </div>
       <div
-        class="py-4 text-center duration-200 border-4 border-black cursor-pointer ring-4 ring-white hover:scale-105"
+        class="cursor-pointer border-4 border-black py-4 text-center ring-4 ring-white duration-200 hover:scale-105"
         :class="feeMode === 'custom' ? 'bg-[#FF5400]' : 'bg-main'"
         @click="setFeeMode('custom')"
       >
@@ -82,21 +82,17 @@ const onChangeFee = (value) => {
     </div>
     <div v-if="feeMode === 'custom'" class="mt-4">
       <input
-        class="w-full p-2 mb-2 bg-black border-4 border-white cursor-pointer active:border-white ring-4 ring-black"
+        class="mb-2 w-full cursor-pointer border-4 border-white bg-black p-2 ring-4 ring-black active:border-white"
         v-model="apiData.fee"
         @input="onChangeFee($event.target.value)"
         type="number"
       />
     </div>
-    <div class="flex justify-between p-4 mt-4 text-black bg-[#d8c836] border-4 border-black ring-4 ring-white">
+    <div
+      class="mt-4 flex justify-between border-4 border-black bg-[#d8c836] p-4 text-black ring-4 ring-white"
+    >
       <div>FeeRate</div>
       <div>{{ apiData.fee }} sats / VByte</div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.bg-main {
-  background-color: #FF5400; /* Example main color */
-}
-</style>
